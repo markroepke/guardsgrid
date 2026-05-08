@@ -694,6 +694,37 @@
             pointer-events: auto;
         }
 
+        /* Toast notification (e.g., "Copied!") */
+        .toast {
+            position: fixed;
+            bottom: max(28px, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border: 1px solid var(--cle-navy);
+            outline: 1px solid var(--cle-cream-deep);
+            outline-offset: 3px;
+            padding: 12px 22px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            text-indent: 0.18em;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 1100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         .label-popover-title {
             font-family: 'Cinzel', serif;
             font-weight: 700;
@@ -2079,6 +2110,8 @@
         <div class="label-popover-desc" id="labelPopoverDesc"></div>
     </div>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-inner">
@@ -2201,7 +2234,8 @@
                     <div class="summary-detail-status">Tap a cell above to see details.</div>
                 </div>
                 <div class="modal-buttons">
-                    <button class="btn-primary" id="nextGameBtn" onclick="closeSummary()" style="flex: 1;">Close</button>
+                    <button class="btn-secondary" onclick="closeSummary()" style="flex: 1;">Close</button>
+                    <button class="btn-primary" onclick="shareResults()" style="flex: 1;">Share Score</button>
                 </div>
                 <div class="next-puzzle" id="nextPuzzle">Next puzzle in <span id="countdown">—</span></div>
             </div>
@@ -5365,6 +5399,72 @@
 
         function closeSummary() {
             document.getElementById('summaryModal').classList.remove('active');
+        }
+
+        // ===== SHARE =====
+        function buildShareText() {
+            const cells = gameState.flat();
+            const filled = cells.filter(c => c !== null);
+            const correct = filled.filter(c => c && c.correct).length;
+            const allFilled = filled.length === 9;
+            const perfect = correct === 9 && allFilled;
+
+            const num = getDailyNumber();
+
+            // Header line
+            let header = `GuardsGrid #${num} — ${correct}/9`;
+            if (perfect) header += ' ★';
+            else if (gaveUp && filled.length < 9) header += ' (forfeit)';
+
+            // Grid: 🟦 correct, 🟥 wrong, ⬛ skipped
+            let grid = '';
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    const cell = gameState[r][c];
+                    if (!cell) grid += '⬛';
+                    else if (cell.correct) grid += '🟦';
+                    else grid += '🟥';
+                }
+                grid += '\n';
+            }
+
+            // Always include the specific date hash so friends see the same puzzle
+            const url = window.location.origin + window.location.pathname + '#' + viewingDate;
+
+            return header + '\n\n' + grid + '\n' + url;
+        }
+
+        async function shareResults() {
+            const text = buildShareText();
+
+            // Try native share sheet first (mobile)
+            if (navigator.share) {
+                try {
+                    await navigator.share({ text });
+                    return;
+                } catch (err) {
+                    // Cancelled is fine, anything else falls through to clipboard
+                    if (err && err.name === 'AbortError') return;
+                }
+            }
+
+            // Clipboard fallback
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('Copied to clipboard');
+            } catch (err) {
+                // Last resort: prompt() so the user can manually copy
+                window.prompt('Copy your results:', text);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
         // Live countdown to next daily puzzle
