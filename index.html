@@ -1150,6 +1150,218 @@
             border-color: var(--cle-red-deep);
         }
 
+        /* "Play Previous Grids" — same style as How To Play but full-width */
+        .archive-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+            background: transparent;
+            color: var(--cle-cream-dim);
+            border: 1px solid var(--cle-stone-deep);
+            padding: 12px 16px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            text-indent: 0.18em;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .archive-button:hover,
+        .archive-button:focus-visible {
+            background: var(--cle-navy-deep);
+            border-color: var(--cle-cream-deep);
+            color: var(--cle-cream);
+            outline: none;
+        }
+
+        /* Archive mode banner — visible when viewing a non-today puzzle */
+        .archive-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border: 1px solid var(--cle-navy);
+            outline: 1px solid var(--cle-cream-deep);
+            outline-offset: 3px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .archive-banner.show {
+            display: flex;
+        }
+
+        .archive-banner-mark {
+            color: var(--cle-red);
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .archive-banner-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .archive-banner-back {
+            flex-shrink: 0;
+            background: var(--cle-navy);
+            color: var(--cle-cream);
+            border: none;
+            padding: 6px 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-indent: 0.18em;
+            font-weight: 600;
+        }
+
+        .archive-banner-back:hover {
+            background: var(--cle-red);
+        }
+
+        /* Archive list inside the modal */
+        .archive-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 14px 0 18px;
+            max-height: 50vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .archive-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-stone-deep);
+            cursor: pointer;
+            transition: all 0.12s;
+            text-align: left;
+        }
+
+        .archive-row:hover,
+        .archive-row:focus-visible {
+            background: var(--cle-navy);
+            border-color: var(--cle-cream);
+            outline: none;
+        }
+
+        .archive-row.current {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border-color: var(--cle-navy);
+        }
+
+        .archive-row-num {
+            font-family: 'Big Shoulders Inline Display', sans-serif;
+            font-weight: 900;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--cle-cream);
+            min-width: 56px;
+            text-align: left;
+        }
+
+        .archive-row.current .archive-row-num {
+            color: var(--cle-navy);
+        }
+
+        .archive-row-meta {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .archive-row-date {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--cle-cream);
+        }
+
+        .archive-row.current .archive-row-date {
+            color: var(--cle-navy);
+        }
+
+        .archive-row-status {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--cle-cream-dim);
+            margin-top: 2px;
+        }
+
+        .archive-row.current .archive-row-status {
+            color: var(--cle-red);
+        }
+
+        .archive-row.completed .archive-row-status {
+            color: var(--cle-cream-soft);
+        }
+
+        .archive-row-status .score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .archive-row-mark {
+            font-size: 14px;
+            color: var(--cle-cream-dim);
+            flex-shrink: 0;
+            width: 18px;
+            text-align: center;
+        }
+
+        .archive-row.completed .archive-row-mark {
+            color: var(--cle-red);
+        }
+
+        .archive-row.in-progress .archive-row-mark {
+            color: var(--cle-cream);
+        }
+
+        .archive-row.current .archive-row-mark {
+            color: var(--cle-red);
+        }
+
+        .archive-empty {
+            padding: 30px 16px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            color: var(--cle-cream-dim);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
         /* ========== SUMMARY ========== */
         .summary-grid {
             display: grid;
@@ -1638,6 +1850,12 @@
                 <span class="htp-label">How to Play</span>
             </button>
 
+            <div class="archive-banner" id="archiveBanner">
+                <span class="archive-banner-mark">⌛</span>
+                <span class="archive-banner-text" id="archiveBannerText">Archive Mode</span>
+                <button class="archive-banner-back" onclick="backToToday()">Back to Today</button>
+            </div>
+
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-number" id="filledCount">0</div>
@@ -1659,6 +1877,11 @@
             </div>
 
             <button class="giveup-button" onclick="giveUp()">Give Up — End Round</button>
+
+            <button class="archive-button" onclick="openArchive()">
+                <span class="htp-icon" style="background: var(--cle-cream); color: var(--cle-navy);">★</span>
+                <span class="htp-label">Play Previous Grids</span>
+            </button>
 
             <div class="footer-mark"><span class="laurel">❦</span> Built on the lakefront <span class="laurel">❦</span></div>
         </div>
@@ -1689,6 +1912,19 @@
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                     <button class="btn-primary" id="submitBtn" onclick="submitPlayer()" disabled>Lock In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="archiveModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <h2>Daily Archive</h2>
+                <p>Replay any past puzzle. Your progress for each day is saved separately.</p>
+                <div class="archive-list" id="archiveList"></div>
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="closeArchive()" style="flex: 1;">Close</button>
                 </div>
             </div>
         </div>
@@ -3951,8 +4187,12 @@
 
         // ===== DAILY PUZZLE =====
         // Launch date: same puzzle for everyone on a given day, in their local timezone.
-        const DAILY_LAUNCH = new Date(2026, 4, 9); // 2026-05-09 = Daily #1
-        const STORAGE_KEY = 'guardsgrid-daily-v1';
+        const DAILY_LAUNCH = new Date(2026, 3, 9); // 2026-04-09 = Daily #1 (one month archive)
+        const STORAGE_KEY = 'guardsgrid-daily-v2';
+
+        // The date the user is currently viewing — defaults to today, but can be
+        // overridden via URL hash (e.g. #2026-05-03) to play archived puzzles.
+        let viewingDate = null;
 
         function getTodayDateString() {
             const d = new Date();
@@ -3961,18 +4201,53 @@
                 String(d.getDate()).padStart(2, '0');
         }
 
-        function getDailyNumber() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        function parseDateString(s) {
+            const [y, m, d] = s.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        function formatDateLong(s) {
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const d = parseDateString(s);
+            return months[d.getMonth()] + ' ' + d.getDate();
+        }
+
+        function formatDateShort(s) {
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const d = parseDateString(s);
+            return months[d.getMonth()] + ' ' + d.getDate();
+        }
+
+        function isToday(dateStr) {
+            return dateStr === getTodayDateString();
+        }
+
+        function getViewingDate() {
+            const hash = window.location.hash.slice(1);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(hash)) {
+                // Validate it's a real date and not in the future or before launch
+                const d = parseDateString(hash);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const launch = new Date(DAILY_LAUNCH); launch.setHours(0,0,0,0);
+                if (d >= launch && d <= today) {
+                    return hash;
+                }
+            }
+            return getTodayDateString();
+        }
+
+        function getDailyNumber(dateStr) {
+            dateStr = dateStr || viewingDate || getTodayDateString();
+            const view = parseDateString(dateStr);
+            view.setHours(0, 0, 0, 0);
             const launch = new Date(DAILY_LAUNCH);
             launch.setHours(0, 0, 0, 0);
-            const days = Math.floor((today - launch) / (1000 * 60 * 60 * 24));
+            const days = Math.floor((view - launch) / (1000 * 60 * 60 * 24));
             return Math.max(1, days + 1);
         }
 
         function getDailySeed() {
-            // Hash today's local-date string into a 32-bit seed
-            const s = getTodayDateString();
+            const s = viewingDate || getTodayDateString();
             let h = 2166136261 >>> 0;
             for (let i = 0; i < s.length; i++) {
                 h ^= s.charCodeAt(i);
@@ -4044,14 +4319,22 @@
             selectedColumnCriteria = shuffle(allColumnCriteria).slice(0, 3);
         }
 
+        function loadAllStates() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
         function saveDailyState() {
             try {
-                const state = {
-                    date: getTodayDateString(),
+                const all = loadAllStates();
+                all[viewingDate] = {
                     cells: gameState.map(row => row.map(c => c ? { n: c.name, c: c.correct } : null)),
                     finished: gameState.flat().every(p => p !== null)
                 };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
             } catch (e) {
                 /* localStorage may be unavailable in private mode */
             }
@@ -4059,13 +4342,9 @@
 
         function loadDailyState() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return false;
-                const state = JSON.parse(raw);
-                if (state.date !== getTodayDateString()) {
-                    localStorage.removeItem(STORAGE_KEY);
-                    return false;
-                }
+                const all = loadAllStates();
+                const state = all[viewingDate];
+                if (!state) return false;
                 if (Array.isArray(state.cells)) {
                     gameState = state.cells.map(row => row.map(c => c ? { name: c.n, correct: c.c } : null));
                 }
@@ -4075,25 +4354,95 @@
             }
         }
 
+        // Returns { played: bool, finished: bool, correctCount: int, filledCount: int } for a given date
+        function getStateSummary(dateStr) {
+            const all = loadAllStates();
+            const state = all[dateStr];
+            if (!state || !Array.isArray(state.cells)) {
+                return { played: false, finished: false, correctCount: 0, filledCount: 0 };
+            }
+            const cells = state.cells.flat();
+            const filled = cells.filter(c => c !== null);
+            const correct = filled.filter(c => c && c.c);
+            return {
+                played: filled.length > 0,
+                finished: state.finished === true,
+                correctCount: correct.length,
+                filledCount: filled.length
+            };
+        }
+
         function updateDailyHeader() {
             const num = getDailyNumber();
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const d = new Date();
-            const dateLabel = months[d.getMonth()] + ' ' + d.getDate();
+            const dateLabel = formatDateShort(viewingDate);
+            const isCurrent = isToday(viewingDate);
             document.getElementById('dailyNumber').textContent = 'Daily #' + num;
             document.getElementById('dailyDate').textContent = dateLabel;
+
+            // Toggle the archive banner
+            const banner = document.getElementById('archiveBanner');
+            if (banner) {
+                if (isCurrent) {
+                    banner.classList.remove('show');
+                } else {
+                    banner.classList.add('show');
+                    document.getElementById('archiveBannerText').textContent =
+                        'Archive Mode · Daily #' + num + ' · ' + formatDateLong(viewingDate);
+                }
+            }
         }
 
         function initializeGame() {
+            viewingDate = getViewingDate();
+            renderForCurrentDate();
+        }
+
+        // Re-render the entire game for the current viewingDate.
+        // Called on initial load and whenever the user switches days.
+        function renderForCurrentDate(autoShowSummary) {
+            // Reset in-memory gameState
+            gameState = [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ];
             updateDailyHeader();
             selectDailyCriteria();
             const wasFinished = loadDailyState();
+            document.getElementById('completionMessage').classList.remove('show');
             renderGrid();
-            if (wasFinished) {
-                // Show summary on load if user already finished today's puzzle
+            if (wasFinished && autoShowSummary !== false) {
                 setTimeout(showSummary, 350);
             }
         }
+
+        // Switch to a specific date (updates URL hash, which triggers re-render)
+        function switchToDate(dateStr) {
+            // Close any open modals first
+            document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+            if (dateStr === getTodayDateString()) {
+                if (window.location.hash) {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+            } else {
+                window.location.hash = dateStr;
+            }
+            viewingDate = dateStr;
+            renderForCurrentDate(false);
+        }
+
+        function backToToday() {
+            switchToDate(getTodayDateString());
+        }
+
+        // Listen for browser back/forward through archived dates
+        window.addEventListener('hashchange', () => {
+            const newDate = getViewingDate();
+            if (newDate !== viewingDate) {
+                viewingDate = newDate;
+                renderForCurrentDate(false);
+            }
+        });
 
         function renderGrid() {
             const gridWrapper = document.getElementById('gridWrapper');
@@ -4384,6 +4733,93 @@
 
         function closeHowToPlay() {
             document.getElementById('howToPlayModal').classList.remove('active');
+        }
+
+        function openArchive() {
+            buildArchiveList();
+            document.getElementById('archiveModal').classList.add('active');
+        }
+
+        function closeArchive() {
+            document.getElementById('archiveModal').classList.remove('active');
+        }
+
+        function buildArchiveList() {
+            const list = document.getElementById('archiveList');
+            list.innerHTML = '';
+
+            const today = getTodayDateString();
+            const launch = new Date(DAILY_LAUNCH);
+            launch.setHours(0, 0, 0, 0);
+            const todayDate = parseDateString(today);
+            todayDate.setHours(0, 0, 0, 0);
+
+            // Walk every day from today back to launch
+            const dates = [];
+            for (let d = new Date(todayDate); d >= launch; d.setDate(d.getDate() - 1)) {
+                const ds = d.getFullYear() + '-' +
+                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(d.getDate()).padStart(2, '0');
+                dates.push(ds);
+            }
+
+            if (dates.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'archive-empty';
+                empty.textContent = '— No archive yet · Come back tomorrow —';
+                list.appendChild(empty);
+                return;
+            }
+
+            dates.forEach(dateStr => {
+                const row = document.createElement('div');
+                row.className = 'archive-row';
+                row.setAttribute('role', 'button');
+                row.setAttribute('tabindex', '0');
+
+                const isCurrent = dateStr === viewingDate;
+                const isTodayDate = dateStr === today;
+                const summary = getStateSummary(dateStr);
+
+                if (isCurrent) row.classList.add('current');
+                if (summary.finished) row.classList.add('completed');
+                else if (summary.played) row.classList.add('in-progress');
+
+                const num = getDailyNumber(dateStr);
+                const dateLabel = isTodayDate ? 'Today · ' + formatDateShort(dateStr) : formatDateLong(dateStr);
+
+                let statusText, mark;
+                if (summary.finished) {
+                    statusText = `Completed · <span class="score">${summary.correctCount}/9</span>`;
+                    mark = summary.correctCount === 9 ? '★' : '✓';
+                } else if (summary.played) {
+                    statusText = `In progress · <span class="score">${summary.filledCount}/9</span>`;
+                    mark = '●';
+                } else {
+                    statusText = isCurrent ? 'Current puzzle' : 'Not played';
+                    mark = isCurrent ? '◆' : '·';
+                }
+
+                row.innerHTML = `
+                    <div class="archive-row-num">#${num}</div>
+                    <div class="archive-row-meta">
+                        <div class="archive-row-date">${dateLabel}</div>
+                        <div class="archive-row-status">${statusText}</div>
+                    </div>
+                    <div class="archive-row-mark">${mark}</div>
+                `;
+
+                const handle = () => switchToDate(dateStr);
+                row.addEventListener('click', handle);
+                row.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handle();
+                    }
+                });
+
+                list.appendChild(row);
+            });
         }
 
         function getValidPlayerNames(row, col) {
