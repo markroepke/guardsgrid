@@ -325,25 +325,149 @@
             background: var(--cle-red);
         }
 
-        /* ========== INSTRUCTIONS ========== */
-        .instructions {
-            background: var(--cle-navy-deep);
-            border: 1px solid var(--cle-navy-light);
-            border-left: 4px solid var(--cle-red);
-            padding: 14px 16px;
-            font-size: 13px;
-            color: var(--cle-cream-soft);
-            margin-bottom: 24px;
-            line-height: 1.6;
-            position: relative;
-            font-weight: 400;
+        /* ========== HOW TO PLAY BUTTON ========== */
+        .how-to-play-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: auto;
+            margin: 0 auto 24px;
+            background: transparent;
+            color: var(--cle-cream-dim);
+            border: 1px solid var(--cle-stone-deep);
+            padding: 10px 16px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.24em;
+            text-indent: 0.24em;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex: 0 0 auto;
         }
 
-        .instructions strong {
+        .how-to-play-button:hover,
+        .how-to-play-button:focus-visible {
+            background: var(--cle-navy-deep);
+            border-color: var(--cle-cream-deep);
+            color: var(--cle-cream);
+            outline: none;
+        }
+
+        /* "?" badge */
+        .htp-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--cle-red);
+            color: var(--cle-cream);
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 16px;
+            text-indent: 0;
+            flex-shrink: 0;
+        }
+
+        .htp-label {
+            line-height: 1;
+        }
+
+        /* Wrap to allow centering despite flex-direction: column on container */
+        .container-inner {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .how-to-play-button {
+            align-self: center;
+        }
+
+        /* ========== HOW TO PLAY CONTENT ========== */
+        .htp-section {
+            margin-bottom: 16px;
+        }
+
+        .htp-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .htp-section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cle-cream);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--cle-stone-deep);
+        }
+
+        .htp-section p,
+        .htp-section li {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 13px;
+            line-height: 1.65;
+            color: var(--cle-cream-soft);
+            margin-bottom: 6px;
+        }
+
+        .htp-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .htp-section li {
+            padding-left: 18px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .htp-section li::before {
+            content: '✦';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--cle-red);
+            font-size: 9px;
+            line-height: 1.85;
+        }
+
+        .htp-section strong {
             color: var(--cle-cream);
             font-weight: 700;
             font-family: 'Cinzel', serif;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
+        }
+
+        .htp-key {
+            display: inline-block;
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            padding: 2px 6px;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-radius: 2px;
+            margin: 0 2px;
+        }
+
+        .htp-key.wrong {
+            background: var(--cle-red);
+            color: var(--cle-cream);
+        }
+
+        .htp-key.empty {
+            background: var(--cle-stone-deep);
+            color: var(--cle-cream);
         }
 
         /* ========== STATS PANEL (scoreboard) ========== */
@@ -1489,9 +1613,10 @@
                 </div>
             </header>
 
-            <div class="instructions">
-                Field a <strong>3 × 3</strong> lineup of <strong>Cleveland</strong> legends from any era. Each cell needs a player who clears <strong>both</strong> the row and column criteria. No repeat names. Tap any <strong>label</strong> for its full description, or tap a red or empty cell in the summary to see who would've worked.
-            </div>
+            <button class="how-to-play-button" onclick="openHowToPlay()">
+                <span class="htp-icon">?</span>
+                <span class="htp-label">How to Play</span>
+            </button>
 
             <div class="stats">
                 <div class="stat-box">
@@ -1544,6 +1669,44 @@
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                     <button class="btn-primary" id="submitBtn" onclick="submitPlayer()" disabled>Lock In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="howToPlayModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <h2>How to Play</h2>
+                <div class="htp-section">
+                    <p>Field a <strong>3 × 3</strong> lineup of Cleveland Guardians/Indians legends from any era. Every player who has ever taken a single game's worth of plate appearances or batters faced is eligible.</p>
+                </div>
+
+                <div class="htp-section">
+                    <div class="htp-section-title">Rules</div>
+                    <ul>
+                        <li>Each cell needs a player who satisfies <strong>both</strong> the row and column criteria.</li>
+                        <li>You can't repeat a player — once they're locked into one cell, they're off the board.</li>
+                        <li>Tap any <strong>row or column label</strong> (or its <span class="htp-icon">i</span> indicator) to see the full criteria description.</li>
+                    </ul>
+                </div>
+
+                <div class="htp-section">
+                    <div class="htp-section-title">Cells</div>
+                    <ul>
+                        <li><span class="htp-key">Cream</span> — your player matches both criteria. Nice.</li>
+                        <li><span class="htp-key wrong">Red</span> — your player doesn't satisfy at least one criterion. The cell tells you which.</li>
+                        <li><span class="htp-key empty">Empty</span> — you skipped this cell.</li>
+                    </ul>
+                </div>
+
+                <div class="htp-section">
+                    <div class="htp-section-title">Endgame</div>
+                    <p>When all 9 cells are filled the round ends automatically. Or hit <strong>Give Up</strong> any time. In the summary, tap any red or empty cell to see who <em>would</em> have worked.</p>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="closeHowToPlay()" style="flex: 1;">Play Ball</button>
                 </div>
             </div>
         </div>
@@ -4076,6 +4239,14 @@
 
         function giveUp() {
             showSummary();
+        }
+
+        function openHowToPlay() {
+            document.getElementById('howToPlayModal').classList.add('active');
+        }
+
+        function closeHowToPlay() {
+            document.getElementById('howToPlayModal').classList.remove('active');
         }
 
         function getValidPlayerNames(row, col) {
