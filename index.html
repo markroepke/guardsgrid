@@ -4631,6 +4631,11 @@
             });
         })();
 
+        // Strip diacritics so "ramire" matches "Ramírez", "andres" matches "Andrés", etc.
+        function normalizeForSearch(s) {
+            return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        }
+
         document.getElementById('playerInput').addEventListener('input', (e) => {
             const value = e.target.value.trim();
             const suggestionsDiv = document.getElementById('suggestions');
@@ -4643,9 +4648,10 @@
             if (value.length < 2) return;
 
             const usedNames = gameState.flat().filter(p => p !== null).map(p => p.name);
+            const queryNorm = normalizeForSearch(value);
 
             const matches = guardiansPlayers.filter(p =>
-                p.name.toLowerCase().includes(value.toLowerCase()) &&
+                normalizeForSearch(p.name).includes(queryNorm) &&
                 !usedNames.includes(p.name)
             ).slice(0, 8);
 
@@ -4662,7 +4668,7 @@
                     suggestionsDiv.appendChild(div);
                 });
                 document.getElementById('submitBtn').disabled = false;
-            } else if (guardiansPlayers.some(p => p.name.toLowerCase() === value.toLowerCase())) {
+            } else if (guardiansPlayers.some(p => normalizeForSearch(p.name) === queryNorm)) {
                 document.getElementById('submitBtn').disabled = false;
             }
         });
@@ -4671,7 +4677,12 @@
             const playerName = document.getElementById('playerInput').value.trim();
             const { row, col } = currentCell;
 
-            const player = guardiansPlayers.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+            const queryNorm = normalizeForSearch(playerName);
+            // Try exact match first, then accent-insensitive
+            let player = guardiansPlayers.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+            if (!player) {
+                player = guardiansPlayers.find(p => normalizeForSearch(p.name) === queryNorm);
+            }
 
             if (!player) {
                 document.getElementById('errorMessage').textContent = 'Player not found in database';
