@@ -1354,12 +1354,15 @@
             margin-top: 2px;
         }
 
-        .archive-row.current .archive-row-status {
-            color: var(--cle-red);
-        }
-
         .archive-row.completed .archive-row-status {
             color: var(--cle-cream-soft);
+        }
+
+        /* .current must come AFTER .completed so it wins on equal specificity
+           when a row is both today's puzzle AND already finished/forfeited. */
+        .archive-row.current .archive-row-status {
+            color: var(--cle-red);
+            font-weight: 600;
         }
 
         .archive-row-status .score {
@@ -1367,6 +1370,10 @@
             font-weight: 700;
             font-size: 11px;
             font-variant-numeric: tabular-nums;
+        }
+
+        .archive-row.current .archive-row-status .score {
+            color: var(--cle-navy);
         }
 
         .archive-row-mark {
@@ -4110,7 +4117,7 @@
             rbi100Season: ["Jim Thome","Albert Belle","Manny Ramirez","Travis Hafner","Hal Trosky Sr.","Earl Averill Sr.","Larry Doby","Andre Thornton","Joe Carter","José Ramírez","Carlos Baerga","Travis Fryman","Edwin Encarnación","Carlos Santana","Brook Jacoby","Al Rosen","Vic Wertz","Rocky Colavito","Roberto Alomar","Juan Gonzalez","Jim Hegan","Bobby Bonds","Joe Vosmik","Kenny Lofton","Roy Cullenbine","Nap Lajoie","Nap Lajoie","Earl Averill Sr.","Ken Keltner"],
             sb40Season: ["Kenny Lofton","Brett Butler","Miguel Dilone","Otis Nixon","Rajai Davis","Steven Kwan","José Ramírez","Coco Crisp","Michael Bourn","Roberto Alomar","Jolbert Cabrera"],
             sb300Career: ["Kenny Lofton","Tristram Speaker","Charlie Jamieson","Nap Lajoie","Nap Lajoie","Omar Vizquel","José Ramírez"],
-            hits2000: ["Nap Lajoie","Nap Lajoie","Tristram Speaker","Earl Averill Sr.","Lou Boudreau","Jim Thome","Charlie Jamieson","José Ramírez","Omar Vizquel","Joe Sewell","Ken Keltner"],
+            hits1500: ["Nap Lajoie","Tristram Speaker","Earl Averill Sr.","Joe Sewell","Charlie Jamieson","Lou Boudreau","Ken Keltner","Omar Vizquel","José Ramírez","Kenny Lofton"],
 
             // Pitching
             wins200: ["Bob Feller","Mel Harder","Bob Lemon"],
@@ -4183,7 +4190,7 @@
             { label: "100+ RBI Season", desc: "Drove in 100+ runs in a season with Cleveland", check: (p) => hasStatTag(p, "rbi100Season") },
             { label: "40+ Steal Season", desc: "Stole 40+ bases in a season with Cleveland", check: (p) => hasStatTag(p, "sb40Season") },
             { label: "300+ Career SB", desc: "Stole 300+ bases with Cleveland", check: (p) => hasStatTag(p, "sb300Career") },
-            { label: "2000+ Career Hits", desc: "Recorded 2000+ hits with Cleveland", check: (p) => hasStatTag(p, "hits2000") },
+            { label: "1500+ Career Hits", desc: "Recorded 1500+ hits with Cleveland", check: (p) => hasStatTag(p, "hits1500") },
 
             // Stat-based criteria (pitching)
             { label: "200+ Career Wins", desc: "Won 200+ games with Cleveland", check: (p) => hasStatTag(p, "wins200") },
