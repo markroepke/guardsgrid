@@ -853,6 +853,43 @@
             max-width: 100%;
         }
 
+        /* Locked cell when user has given up */
+        .grid-cell.locked {
+            cursor: default;
+            background: var(--cle-navy-deep);
+            border-color: var(--cle-stone-deep);
+            opacity: 0.65;
+        }
+
+        .grid-cell.locked::before,
+        .grid-cell.locked::after {
+            opacity: 0.25;
+        }
+
+        .grid-cell.locked:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--cle-stone-deep);
+            background: var(--cle-navy-deep);
+        }
+
+        /* Show a faded × in locked empty cells */
+        .grid-cell.locked::after {
+            content: '';
+        }
+
+        /* Give Up button → "View Summary" when locked/finished */
+        .giveup-button.locked {
+            color: var(--cle-cream-dim);
+            border-color: var(--cle-stone-deep);
+        }
+
+        .giveup-button.locked:hover {
+            background: var(--cle-navy-deep);
+            color: var(--cle-cream);
+            border-color: var(--cle-cream-deep);
+        }
+
         .grid-cell.filled .grid-cell-player {
             color: var(--cle-navy);
         }
@@ -4108,6 +4145,7 @@
         let currentCell = null;
         let selectedRowCriteria = [];
         let selectedColumnCriteria = [];
+        let gaveUp = false;
 
         // All possible criteria
         const allRowCriteria = [
@@ -4330,9 +4368,11 @@
         function saveDailyState() {
             try {
                 const all = loadAllStates();
+                const allFilled = gameState.flat().every(p => p !== null);
                 all[viewingDate] = {
                     cells: gameState.map(row => row.map(c => c ? { n: c.name, c: c.correct } : null)),
-                    finished: gameState.flat().every(p => p !== null)
+                    finished: allFilled || gaveUp,
+                    gaveUp: gaveUp
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
             } catch (e) {
@@ -4348,25 +4388,27 @@
                 if (Array.isArray(state.cells)) {
                     gameState = state.cells.map(row => row.map(c => c ? { name: c.n, correct: c.c } : null));
                 }
+                gaveUp = state.gaveUp === true;
                 return state.finished === true;
             } catch (e) {
                 return false;
             }
         }
 
-        // Returns { played: bool, finished: bool, correctCount: int, filledCount: int } for a given date
+        // Returns { played, finished, gaveUp, correctCount, filledCount } for a given date
         function getStateSummary(dateStr) {
             const all = loadAllStates();
             const state = all[dateStr];
             if (!state || !Array.isArray(state.cells)) {
-                return { played: false, finished: false, correctCount: 0, filledCount: 0 };
+                return { played: false, finished: false, gaveUp: false, correctCount: 0, filledCount: 0 };
             }
             const cells = state.cells.flat();
             const filled = cells.filter(c => c !== null);
             const correct = filled.filter(c => c && c.c);
             return {
-                played: filled.length > 0,
+                played: filled.length > 0 || state.gaveUp === true,
                 finished: state.finished === true,
+                gaveUp: state.gaveUp === true,
                 correctCount: correct.length,
                 filledCount: filled.length
             };
@@ -4406,13 +4448,32 @@
                 [null, null, null],
                 [null, null, null]
             ];
+            gaveUp = false;
             updateDailyHeader();
             selectDailyCriteria();
             const wasFinished = loadDailyState();
             document.getElementById('completionMessage').classList.remove('show');
             renderGrid();
+            updateGiveUpButton();
             if (wasFinished && autoShowSummary !== false) {
                 setTimeout(showSummary, 350);
+            }
+        }
+
+        // Disable Give Up if the round is already done; replace with View Summary
+        function updateGiveUpButton() {
+            const btn = document.querySelector('.giveup-button');
+            if (!btn) return;
+            const allFilled = gameState.flat().every(p => p !== null);
+            const locked = gaveUp || allFilled;
+            if (locked) {
+                btn.textContent = 'View Summary';
+                btn.classList.add('locked');
+                btn.onclick = showSummary;
+            } else {
+                btn.textContent = 'Give Up — End Round';
+                btn.classList.remove('locked');
+                btn.onclick = giveUp;
             }
         }
 
@@ -4472,6 +4533,8 @@
                             cell.classList.add('wrong');
                         }
                         cell.innerHTML = `<div class="grid-cell-player">${gameState[row][col].name}</div>`;
+                    } else if (gaveUp) {
+                        cell.classList.add('locked');
                     } else {
                         cell.onclick = () => openModal(row, col);
                     }
@@ -4702,6 +4765,7 @@
             saveDailyState();
             closeModal();
             renderGrid();
+            updateGiveUpButton();
 
             if (gameState.flat().every(p => p !== null)) {
                 showSummary();
@@ -4720,9 +4784,18 @@
         }
 
         function giveUp() {
-            // Mark all empty cells as filled with null markers? No — keep gameState as is
-            // but treat the round as finished by saving state.
+            if (gaveUp) {
+                showSummary();
+                return;
+            }
+            // Confirm so users don't tap accidentally and lose the day
+            if (!confirm("End today's round? You won't be able to fill in any more cells.")) {
+                return;
+            }
+            gaveUp = true;
             saveDailyState();
+            renderGrid();
+            updateGiveUpButton();
             showSummary();
         }
 
@@ -4800,7 +4873,10 @@
                 const dateLabel = isTodayDate ? 'Today · ' + formatDateShort(dateStr) : formatDateLong(dateStr);
 
                 let statusText, mark;
-                if (summary.finished) {
+                if (summary.finished && summary.gaveUp && summary.filledCount < 9) {
+                    statusText = `Forfeited · <span class="score">${summary.correctCount}/9</span>`;
+                    mark = '⚑';
+                } else if (summary.finished) {
                     statusText = `Completed · <span class="score">${summary.correctCount}/9</span>`;
                     mark = summary.correctCount === 9 ? '★' : '✓';
                 } else if (summary.played) {
@@ -4857,6 +4933,9 @@
             } else if (allFilled) {
                 summaryTitle.textContent = "Final Box Score";
                 summaryText.textContent = `You hit ${correctCount} of 9. Tap a red cell to scout who would've worked.`;
+            } else if (gaveUp) {
+                summaryTitle.textContent = "Round Forfeited";
+                summaryText.textContent = `You gave up at ${totalFilled}/9 filled · ${correctCount} correct.`;
             } else {
                 summaryTitle.textContent = "Round Summary";
                 summaryText.textContent = `${correctCount} of 9 correct · ${totalFilled} filled.`;
