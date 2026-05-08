@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>GuardsGrid — Cleveland Guardians Lineup Game</title>
     <meta name="description" content="A 3×3 lineup game built around Cleveland Guardians/Indians franchise history.">
     <meta name="theme-color" content="#0C2340">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="apple-touch-icon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GuardsGrid">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Inline+Display:wght@400;700;800;900&family=Big+Shoulders+Display:wght@400;700;800;900&family=Cinzel:wght@400;500;700;900&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -59,10 +64,11 @@
                 radial-gradient(ellipse 90% 60% at 50% 0%, rgba(244, 236, 216, 0.05) 0%, transparent 55%),
                 linear-gradient(180deg, var(--cle-navy) 0%, var(--cle-navy-deep) 60%, var(--cle-black) 100%);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 24px 16px 60px;
+            padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(60px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
             color: var(--cle-cream);
             position: relative;
         }
