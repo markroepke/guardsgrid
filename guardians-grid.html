@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuardsGrid — Cleveland Guardians Lineup Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Inline+Display:wght@400;700;800;900&family=Big+Shoulders+Display:wght@400;700;800;900&family=Cinzel:wght@400;500;700;900&family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* City Connect palette: Navy / Cream / Red */
+            --cle-navy: #0C2340;
+            --cle-navy-deep: #050E1C;
+            --cle-navy-mid: #14304F;
+            --cle-navy-light: #1F4068;
+            --cle-cream: #F4ECD8;
+            --cle-cream-soft: #FAF4E2;
+            --cle-cream-deep: #E5D5A8;
+            --cle-cream-dim: #C8B98A;
+            --cle-red: #C8102E;
+            --cle-red-deep: #951024;
+            --cle-red-soft: #DD3548;
+            --cle-black: #060606;
+            --cle-stone: #5C6577;
+            --cle-stone-deep: #2A3A52;
+            --shadow-deep: 0 30px 80px rgba(0, 0, 0, 0.6);
+            --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cle-navy-deep);
+            background-image:
+                /* Bridge cable verticals */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0,
+                    transparent 79px,
+                    rgba(244, 236, 216, 0.025) 79px,
+                    rgba(244, 236, 216, 0.025) 80px
+                ),
+                /* Top warm halo */
+                radial-gradient(ellipse 90% 60% at 50% 0%, rgba(244, 236, 216, 0.05) 0%, transparent 55%),
+                linear-gradient(180deg, var(--cle-navy) 0%, var(--cle-navy-deep) 60%, var(--cle-black) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 24px 16px 60px;
+            color: var(--cle-cream);
+            position: relative;
+        }
+
+        /* Subtle film grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.4 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+            opacity: 0.06;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Bridge silhouette in background */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40vh;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 400' preserveAspectRatio='xMidYEnd meet'><path d='M0 400 L0 320 L100 280 L100 240 L150 200 L200 240 L200 280 L300 320 L300 240 L350 200 L400 240 L400 320 L500 320 L500 200 L600 160 L700 200 L700 320 L800 320 L800 240 L850 200 L900 240 L900 320 L1000 280 L1000 240 L1050 200 L1100 240 L1100 280 L1200 320 L1200 400 Z' fill='%23F4ECD8' opacity='0.04'/></svg>");
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-size: cover;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ========== CONTAINER ========== */
+        .container {
+            background: var(--cle-navy);
+            border: 1px solid var(--cle-cream-deep);
+            outline: 1px solid var(--cle-navy-deep);
+            outline-offset: 4px;
+            padding: 0;
+            max-width: 620px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            box-shadow: var(--shadow-deep);
+        }
+
+        /* Red pinstripe accents on edges (like jersey sleeve piping) */
+        .container::before,
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--cle-red);
+            box-shadow:
+                inset 0 0 0 1px var(--cle-red-deep);
+            pointer-events: none;
+        }
+
+        .container::before {
+            left: -1px;
+        }
+
+        .container::after {
+            right: -1px;
+        }
+
+        /* Top/bottom strip with art deco pattern */
+        .deco-strip {
+            height: 14px;
+            background: var(--cle-cream);
+            position: relative;
+            overflow: hidden;
+            border-top: 1px solid var(--cle-navy);
+            border-bottom: 1px solid var(--cle-navy);
+        }
+
+        .deco-strip::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                /* Stepped art deco geometric pattern */
+                repeating-linear-gradient(
+                    90deg,
+                    var(--cle-navy) 0,
+                    var(--cle-navy) 1.5px,
+                    transparent 1.5px,
+                    transparent 12px
+                ),
+                /* Pentagonal home-plate row */
+                radial-gradient(circle at 6px 100%, var(--cle-red) 1.5px, transparent 1.5px);
+            background-size: 12px 14px, 24px 14px;
+        }
+
+        .deco-strip.bottom {
+            transform: scaleY(-1);
+        }
+
+        .container-inner {
+            padding: 32px 26px 28px;
+            position: relative;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            position: relative;
+            padding: 8px 0 6px;
+            overflow: hidden;
+        }
+
+        /* Roman/classical eyebrow */
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.42em;
+            color: var(--cle-cream-dim);
+            margin-bottom: 14px;
+        }
+
+        .eyebrow .star {
+            color: var(--cle-red);
+            font-size: 8px;
+        }
+
+        .eyebrow::before,
+        .eyebrow::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 1px;
+            background: var(--cle-cream-dim);
+            opacity: 0.55;
+        }
+
+        /* Bridge arch behind the title */
+        .bridge-arch {
+            position: absolute;
+            top: 38px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 130px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .bridge-arch svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* The wordmark - CLE in jersey-style inline letters */
+        .header h1 {
+            font-family: 'Big Shoulders Inline Display', 'Big Shoulders Display', sans-serif;
+            font-weight: 900;
+            font-size: clamp(44px, 13vw, 96px);
+            line-height: 0.82;
+            letter-spacing: 0.02em;
+            color: var(--cle-cream);
+            margin: 0;
+            position: relative;
+            display: inline-block;
+            z-index: 2;
+            max-width: 100%;
+            text-shadow:
+                0 1px 0 var(--cle-navy-deep),
+                0 2px 0 var(--cle-navy-deep);
+            -webkit-text-stroke: 1px var(--cle-cream-deep);
+        }
+
+        .header h1 .stack-break {
+            display: none;
+        }
+
+        @media (max-width: 380px) {
+            .header h1 .stack-break {
+                display: block;
+                height: 0;
+                line-height: 0;
+            }
+            .header h1 {
+                word-break: normal;
+            }
+        }
+
+        .header h1 .dot-c {
+            display: inline-block;
+            width: 0.42em;
+            height: 0.42em;
+            background: var(--cle-red);
+            margin: 0 0.06em;
+            transform: translateY(-0.7em) rotate(45deg);
+            box-shadow:
+                inset 0 0 0 2px var(--cle-cream),
+                0 0 0 1px var(--cle-red-deep);
+            font-size: 0.4em;
+            position: relative;
+            top: -0.06em;
+        }
+
+        /* Subtitle in Cinzel like "GUARDIANS" */
+        .header h2 {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.45em;
+            color: var(--cle-cream);
+            margin: 14px 0 0;
+            text-transform: uppercase;
+            text-indent: 0.45em;
+        }
+
+        .header-meta {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.32em;
+            color: var(--cle-cream-dim);
+            text-transform: uppercase;
+        }
+
+        .header-meta .pip {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid var(--cle-red);
+            border-bottom: 0;
+            margin-top: 1px;
+            position: relative;
+        }
+
+        .header-meta .pip::after {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: -5px;
+            width: 10px;
+            height: 1px;
+            background: var(--cle-red);
+        }
+
+        /* ========== INSTRUCTIONS ========== */
+        .instructions {
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-navy-light);
+            border-left: 4px solid var(--cle-red);
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--cle-cream-soft);
+            margin-bottom: 24px;
+            line-height: 1.6;
+            position: relative;
+            font-weight: 400;
+        }
+
+        .instructions strong {
+            color: var(--cle-cream);
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* ========== STATS PANEL (scoreboard) ========== */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            margin-bottom: 24px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-cream-deep);
+            position: relative;
+        }
+
+        .stats::before {
+            content: '— Scoreboard —';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cle-navy);
+            padding: 0 14px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 0.32em;
+            color: var(--cle-cream);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .stat-box {
+            padding: 22px 12px 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-box + .stat-box {
+            border-left: 1px solid var(--cle-stone-deep);
+        }
+
+        .stat-number {
+            font-family: 'Big Shoulders Inline Display', 'Big Shoulders Display', sans-serif;
+            font-size: 52px;
+            font-weight: 900;
+            color: var(--cle-cream);
+            line-height: 1;
+            letter-spacing: 0;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 0 var(--cle-navy-deep);
+        }
+
+        .stat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            color: var(--cle-cream-dim);
+            margin-top: 8px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* ========== COMPLETION MESSAGE ========== */
+        .completion-message {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border: 1px solid var(--cle-navy);
+            outline: 1px solid var(--cle-cream-deep);
+            outline-offset: 3px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 24px;
+            display: none;
+            position: relative;
+        }
+
+        .completion-message.show {
+            display: block;
+        }
+
+        .completion-message h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--cle-navy);
+            font-weight: 900;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-bottom: 6px;
+        }
+
+        .completion-message p {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--cle-red);
+        }
+
+        /* ========== GRID ========== */
+        .grid-section {
+            margin-bottom: 24px;
+        }
+
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: 96px repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 0;
+            padding: 8px;
+            background:
+                linear-gradient(180deg, var(--cle-navy-deep) 0%, var(--cle-navy) 100%);
+            border: 1px solid var(--cle-cream-deep);
+            outline: 1px solid var(--cle-navy-deep);
+            outline-offset: 3px;
+        }
+
+        .grid-label-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px 6px;
+            min-height: 64px;
+            gap: 4px;
+            background: var(--cle-cream);
+            border: 1px solid var(--cle-navy);
+            color: var(--cle-navy);
+            position: relative;
+        }
+
+        .grid-label-cell.empty {
+            background: transparent;
+            border: 0;
+            color: transparent;
+        }
+
+        .grid-label-cell.empty::after {
+            content: '';
+            position: absolute;
+            inset: 30% 30%;
+            background:
+                conic-gradient(from 0deg,
+                    var(--cle-cream-deep) 0deg 45deg,
+                    transparent 45deg 90deg,
+                    var(--cle-cream-deep) 90deg 135deg,
+                    transparent 135deg 180deg,
+                    var(--cle-cream-deep) 180deg 225deg,
+                    transparent 225deg 270deg,
+                    var(--cle-cream-deep) 270deg 315deg,
+                    transparent 315deg 360deg);
+            mask-image: radial-gradient(circle, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(circle, black 30%, transparent 70%);
+            opacity: 0.4;
+        }
+
+        .label-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 1.05;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cle-navy);
+        }
+
+        .label-desc {
+            font-family: 'Inter Tight', sans-serif;
+            font-weight: 500;
+            font-size: 9px;
+            line-height: 1.3;
+            color: var(--cle-red);
+            letter-spacing: 0.01em;
+            font-style: italic;
+        }
+
+        .grid-cell {
+            min-height: 124px;
+            border: 1px solid var(--cle-cream-deep);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background:
+                /* faint pinstripes like jersey body */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0,
+                    transparent 6px,
+                    rgba(244, 236, 216, 0.025) 6px,
+                    rgba(244, 236, 216, 0.025) 7px
+                ),
+                var(--cle-navy-deep);
+            cursor: pointer;
+            transition: all 0.18s ease;
+            position: relative;
+            color: var(--cle-cream);
+        }
+
+        /* Pentagonal home-plate notches on cell corners */
+        .grid-cell::before,
+        .grid-cell::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: var(--cle-cream);
+            border-style: solid;
+            transition: all 0.18s ease;
+            opacity: 0.55;
+        }
+
+        .grid-cell::before {
+            top: 4px;
+            left: 4px;
+            border-width: 1px 0 0 1px;
+        }
+
+        .grid-cell::after {
+            bottom: 4px;
+            right: 4px;
+            border-width: 0 1px 1px 0;
+        }
+
+        .grid-cell:hover:not(.filled) {
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0,
+                    transparent 6px,
+                    rgba(244, 236, 216, 0.04) 6px,
+                    rgba(244, 236, 216, 0.04) 7px
+                ),
+                var(--cle-navy);
+            border-color: var(--cle-cream);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 0 var(--cle-red);
+        }
+
+        .grid-cell:hover:not(.filled)::before,
+        .grid-cell:hover:not(.filled)::after {
+            opacity: 1;
+            width: 18px;
+            height: 18px;
+        }
+
+        .grid-cell.filled {
+            background: var(--cle-cream);
+            border-color: var(--cle-navy);
+            color: var(--cle-navy);
+            cursor: default;
+            outline: 1px solid var(--cle-cream-deep);
+            outline-offset: -4px;
+        }
+
+        .grid-cell.filled::before,
+        .grid-cell.filled::after {
+            border-color: var(--cle-navy);
+            opacity: 0.4;
+        }
+
+        .grid-cell.filled.wrong {
+            background: var(--cle-red);
+            border-color: var(--cle-red-deep);
+            color: var(--cle-cream);
+            outline: 1px solid var(--cle-red-deep);
+        }
+
+        .grid-cell.filled.wrong::before,
+        .grid-cell.filled.wrong::after {
+            border-color: var(--cle-cream);
+            opacity: 0.55;
+        }
+
+        .grid-cell-player {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0 4px;
+        }
+
+        .grid-cell.filled .grid-cell-player {
+            color: var(--cle-navy);
+        }
+
+        .grid-cell.filled.wrong .grid-cell-player {
+            color: var(--cle-cream);
+        }
+
+        /* ========== MODALS ========== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(5, 14, 28, 0.92);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: modalFade 0.2s ease;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(0); }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--cle-navy);
+            border: 1px solid var(--cle-cream-deep);
+            outline: 1px solid var(--cle-navy-deep);
+            outline-offset: 4px;
+            padding: 0;
+            max-width: 440px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-deep);
+            position: relative;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -1px;
+            width: 4px;
+            background: var(--cle-red);
+            box-shadow: inset 0 0 0 1px var(--cle-red-deep);
+        }
+
+        .modal-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: -1px;
+            width: 4px;
+            background: var(--cle-red);
+            box-shadow: inset 0 0 0 1px var(--cle-red-deep);
+        }
+
+        .modal-inner {
+            padding: 26px 24px 22px;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--cle-cream);
+            margin-bottom: 4px;
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            line-height: 1.05;
+            text-align: center;
+            text-indent: 0.16em;
+        }
+
+        .modal-content h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 1px;
+            background: var(--cle-red);
+            margin: 10px auto 0;
+        }
+
+        .modal-content p {
+            color: var(--cle-cream-soft);
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        #modalCriteria {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--cle-navy);
+            background: var(--cle-cream);
+            border: 1px solid var(--cle-cream-deep);
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--cle-cream-dim);
+            font-family: 'Cinzel', serif;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 11px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-cream-deep);
+            color: var(--cle-cream);
+            font-size: 16px;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .form-group input::placeholder {
+            color: var(--cle-stone);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--cle-cream);
+            background: var(--cle-black);
+            box-shadow: 0 0 0 1px var(--cle-red);
+        }
+
+        .suggestions {
+            max-height: 180px;
+            overflow-y: auto;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-cream-deep);
+            border-top: none;
+            margin-top: -1px;
+        }
+
+        .suggestion {
+            padding: 11px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--cle-stone-deep);
+            font-size: 13px;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cle-cream);
+            transition: all 0.12s;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .suggestion::before {
+            content: '✦';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--cle-red);
+            font-weight: 800;
+            font-size: 9px;
+            opacity: 0;
+            transition: opacity 0.12s;
+        }
+
+        .suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion:hover {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+        }
+
+        .suggestion:hover::before {
+            opacity: 1;
+            color: var(--cle-red);
+        }
+
+        .error-message {
+            color: var(--cle-red-soft);
+            font-size: 11px;
+            font-family: 'Cinzel', serif;
+            margin-top: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 18px;
+            border: none;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+            text-indent: 0.18em;
+        }
+
+        .btn-primary {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border: 1px solid var(--cle-cream);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--cle-cream-soft);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 0 var(--cle-red);
+        }
+
+        .btn-primary:disabled {
+            background: var(--cle-stone-deep);
+            border-color: var(--cle-stone-deep);
+            color: var(--cle-stone);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--cle-cream);
+            border: 1px solid var(--cle-cream-dim);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cle-navy-deep);
+            border-color: var(--cle-cream);
+        }
+
+        .giveup-button {
+            width: 100%;
+            background: transparent;
+            color: var(--cle-red-soft);
+            border: 1px solid var(--cle-red);
+            padding: 14px;
+            margin-top: 16px;
+        }
+
+        .giveup-button:hover {
+            background: var(--cle-red);
+            color: var(--cle-cream);
+            border-color: var(--cle-red-deep);
+        }
+
+        /* ========== SUMMARY ========== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 76px repeat(3, 1fr);
+            gap: 4px;
+            margin: 14px 0 12px;
+            padding: 6px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-cream-deep);
+        }
+
+        .summary-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--cle-navy);
+            background: var(--cle-cream);
+            border: 1px solid var(--cle-navy);
+            padding: 4px 3px;
+            line-height: 1.1;
+            min-height: 60px;
+            word-break: break-word;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .summary-label.empty {
+            background: transparent;
+            border: 0;
+        }
+
+        .summary-cell {
+            min-height: 60px;
+            border: 1px solid var(--cle-stone-deep);
+            background: var(--cle-navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            padding: 5px;
+            line-height: 1.1;
+            word-break: break-word;
+            text-transform: uppercase;
+            color: var(--cle-cream);
+            transition: all 0.15s;
+            letter-spacing: 0.04em;
+        }
+
+        .summary-cell.correct {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border-color: var(--cle-navy);
+        }
+
+        .summary-cell.wrong {
+            background: var(--cle-red);
+            color: var(--cle-cream);
+            border-color: var(--cle-red-deep);
+            cursor: pointer;
+        }
+
+        .summary-cell.wrong:hover {
+            background: var(--cle-red-deep);
+        }
+
+        .summary-cell.empty {
+            background: var(--cle-navy-deep);
+            color: var(--cle-cream-dim);
+            cursor: pointer;
+        }
+
+        .summary-cell.empty:hover {
+            background: var(--cle-stone-deep);
+            color: var(--cle-cream);
+        }
+
+        .summary-cell.selected {
+            outline: 2px solid var(--cle-red);
+            outline-offset: -1px;
+            box-shadow: 0 0 0 1px var(--cle-cream);
+        }
+
+        .summary-detail {
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-cream-deep);
+            border-left: 4px solid var(--cle-red);
+            padding: 16px;
+            font-size: 13px;
+            min-height: 90px;
+            margin-bottom: 14px;
+        }
+
+        .summary-detail-criteria {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cle-cream);
+            margin-bottom: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .summary-detail-name {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--cle-cream);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            line-height: 1.1;
+        }
+
+        .summary-detail-status {
+            font-size: 12px;
+            color: var(--cle-cream-soft);
+            margin-bottom: 10px;
+            line-height: 1.55;
+        }
+
+        .summary-detail-status strong {
+            color: var(--cle-red-soft);
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.06em;
+        }
+
+        .summary-detail-valid-title {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--cle-red-soft);
+            margin-bottom: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            padding-top: 10px;
+            border-top: 1px dashed var(--cle-stone-deep);
+        }
+
+        .summary-detail-valid {
+            font-size: 12px;
+            color: var(--cle-cream-soft);
+            line-height: 1.6;
+        }
+
+        .summary-detail-valid em {
+            color: var(--cle-cream-dim);
+            font-style: italic;
+        }
+
+        .summary-instructions {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            color: var(--cle-cream-dim);
+            text-align: center;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.32em;
+        }
+
+        /* ========== FOOTER FLOURISH ========== */
+        .footer-mark {
+            margin-top: 24px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: var(--cle-cream-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-weight: 500;
+        }
+
+        .footer-mark::before,
+        .footer-mark::after {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 1px;
+            background: var(--cle-cream-deep);
+            opacity: 0.4;
+        }
+
+        .footer-mark .laurel {
+            color: var(--cle-red);
+            font-size: 10px;
+        }
+
+        /* ========== TABLET / SMALLER LAPTOP ========== */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px 6px 30px;
+            }
+
+            .container-inner {
+                padding: 22px 14px 20px;
+            }
+
+            .container::before,
+            .container::after {
+                width: 3px;
+            }
+
+            .header {
+                margin-bottom: 22px;
+                padding-top: 4px;
+            }
+
+            .header h1 {
+                font-size: clamp(40px, 11.5vw, 60px);
+                letter-spacing: 0;
+            }
+
+            .header h2 {
+                font-size: 11px;
+                letter-spacing: 0.32em;
+                margin-top: 10px;
+            }
+
+            .header-meta {
+                font-size: 8px;
+                letter-spacing: 0.24em;
+                gap: 12px;
+                margin-top: 12px;
+            }
+
+            .eyebrow {
+                font-size: 9px;
+                letter-spacing: 0.32em;
+                margin-bottom: 10px;
+            }
+
+            .eyebrow::before,
+            .eyebrow::after {
+                width: 18px;
+            }
+
+            .bridge-arch {
+                width: 78%;
+                max-width: 240px;
+                top: 28px;
+                height: 100px;
+            }
+
+            .instructions {
+                font-size: 12px;
+                padding: 12px;
+                margin-bottom: 18px;
+            }
+
+            .stats {
+                margin-bottom: 22px;
+            }
+
+            .stats::before {
+                font-size: 9px;
+                letter-spacing: 0.24em;
+            }
+
+            .stat-box {
+                padding: 18px 8px 12px;
+            }
+
+            .stat-number {
+                font-size: 38px;
+            }
+
+            .stat-label {
+                font-size: 9px;
+                letter-spacing: 0.24em;
+            }
+
+            .grid-wrapper {
+                grid-template-columns: 72px repeat(3, 1fr);
+                gap: 4px;
+                padding: 6px;
+            }
+
+            .grid-label-cell {
+                padding: 6px 3px;
+                min-height: 56px;
+            }
+
+            .label-title {
+                font-size: 10px;
+                letter-spacing: 0.04em;
+            }
+
+            .label-desc {
+                font-size: 8px;
+                line-height: 1.2;
+            }
+
+            .grid-cell {
+                min-height: 92px;
+                padding: 6px;
+            }
+
+            .grid-cell-player {
+                font-size: 12px;
+                letter-spacing: 0.02em;
+            }
+
+            .grid-cell::before,
+            .grid-cell::after {
+                width: 10px;
+                height: 10px;
+            }
+
+            .modal {
+                padding: 12px;
+            }
+
+            .modal-inner {
+                padding: 22px 16px 18px;
+            }
+
+            .modal-content h2 {
+                font-size: 18px;
+                letter-spacing: 0.12em;
+            }
+
+            #modalCriteria {
+                font-size: 11px;
+                letter-spacing: 0.12em;
+                padding: 10px 12px;
+            }
+
+            button {
+                font-size: 12px;
+                letter-spacing: 0.12em;
+                padding: 12px 12px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 56px repeat(3, 1fr);
+                gap: 3px;
+                padding: 4px;
+            }
+
+            .summary-label {
+                font-size: 8px;
+                min-height: 50px;
+                letter-spacing: 0.02em;
+                padding: 3px 2px;
+            }
+
+            .summary-cell {
+                font-size: 10px;
+                min-height: 50px;
+                padding: 3px;
+                letter-spacing: 0.02em;
+            }
+
+            .summary-detail-name {
+                font-size: 16px;
+            }
+
+            .footer-mark {
+                font-size: 8px;
+                letter-spacing: 0.32em;
+                gap: 10px;
+            }
+
+            .footer-mark::before,
+            .footer-mark::after {
+                width: 28px;
+            }
+        }
+
+        /* ========== NARROW PHONE ========== */
+        @media (max-width: 380px) {
+            .header h1 {
+                font-size: 38px;
+            }
+
+            .header h2 {
+                font-size: 10px;
+                letter-spacing: 0.28em;
+            }
+
+            .eyebrow {
+                font-size: 8px;
+            }
+
+            .grid-wrapper {
+                grid-template-columns: 60px repeat(3, 1fr);
+                gap: 3px;
+                padding: 4px;
+            }
+
+            .grid-label-cell {
+                padding: 4px 2px;
+                min-height: 50px;
+            }
+
+            .label-title {
+                font-size: 9px;
+            }
+
+            .label-desc {
+                font-size: 7px;
+            }
+
+            .grid-cell {
+                min-height: 84px;
+                padding: 4px;
+            }
+
+            .grid-cell-player {
+                font-size: 11px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 50px repeat(3, 1fr);
+            }
+
+            .summary-label {
+                font-size: 7px;
+                min-height: 46px;
+            }
+
+            .summary-cell {
+                font-size: 9px;
+                min-height: 46px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="deco-strip"></div>
+        <div class="container-inner">
+            <header class="header">
+                <div class="bridge-arch" aria-hidden="true">
+                    <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <!-- Stepped art deco arch (Hope Memorial Bridge inspired) -->
+                        <path d="M0 130 L0 110 L20 110 L20 90 L40 90 L40 70 L60 70 L60 55 L80 55 L80 40 L100 40 L100 28 L120 28 L120 18 L140 10 L160 18 L160 28 L180 28 L180 40 L200 40 L200 55 L220 55 L220 70 L240 70 L240 90 L260 90 L260 110 L280 110 L280 130 Z" fill="#F4ECD8" opacity="0.08"/>
+                        <!-- Inner detail -->
+                        <path d="M70 130 L70 75 L90 75 L90 60 L110 60 L110 48 L130 48 L130 38 L140 32 L150 38 L150 48 L170 48 L170 60 L190 60 L190 75 L210 75 L210 130 Z" fill="#C8102E" opacity="0.18"/>
+                    </svg>
+                </div>
+                <div class="eyebrow"><span class="star">✦</span>Hope Memorial Bridge · Est. 1932<span class="star">✦</span></div>
+                <h1>GUARDS<span class="stack-break">&shy;</span>GRID</h1>
+                <h2>A Lineup Game</h2>
+                <div class="header-meta">
+                    <span>Vol. I</span>
+                    <span class="pip"></span>
+                    <span>Cleveland · Ohio</span>
+                </div>
+            </header>
+
+            <div class="instructions">
+                Field a <strong>3 × 3</strong> lineup of <strong>Cleveland</strong> legends from any era. Each cell needs a player who clears <strong>both</strong> the row and column criteria. No repeat names. Tap a red or empty cell in the summary to see who would've worked.
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="filledCount">0</div>
+                    <div class="stat-label">Filled</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="totalCount">9</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+
+            <div class="completion-message" id="completionMessage">
+                <h3>Perfect Lineup</h3>
+                <p>You completed the Guardians Grid!</p>
+            </div>
+
+            <div class="grid-section">
+                <div class="grid-wrapper" id="gridWrapper"></div>
+            </div>
+
+            <button class="giveup-button" onclick="giveUp()">Give Up — End Round</button>
+
+            <div class="footer-mark"><span class="laurel">❦</span> Built on the lakefront <span class="laurel">❦</span></div>
+        </div>
+        <div class="deco-strip bottom"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <h2>At Bat</h2>
+                <p id="modalCriteria"></p>
+                <div class="form-group">
+                    <label for="playerInput">Player Name</label>
+                    <input
+                        type="text"
+                        id="playerInput"
+                        placeholder="Type a name..."
+                        autocomplete="off"
+                    >
+                    <div class="suggestions" id="suggestions"></div>
+                    <div class="error-message" id="errorMessage"></div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn-primary" id="submitBtn" onclick="submitPlayer()" disabled>Lock In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="summaryModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <h2 id="summaryTitle">Final Box Score</h2>
+                <p id="summaryText"></p>
+                <div class="summary-grid" id="summaryGrid"></div>
+                <p class="summary-instructions">✦ Tap a red or empty cell ✦</p>
+                <div class="summary-detail" id="summaryDetail">
+                    <div class="summary-detail-status">Tap a cell above to see details.</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="newGame()" style="flex: 1;">New Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive Cleveland Guardians/Indians All-Time Roster (1901-2025)
+        // Sourced from Wikipedia all-time roster
+        // Format: [name, position, eraStart, eraEnd, awards]
+        // P=Pitcher, C=Catcher, IF=Infielder, OF=Outfielder
+        // Awards: AS=All-Star, GG=Gold Glove, SS=Silver Slugger, CY=Cy Young, MVP=MVP, HOF=Hall of Fame, ROY=Rookie of the Year
+
+        const playerData = [
+            // ===== 2020s Era =====
+            ["Shane Bieber","P",2019,2025,"AS,CY"],
+            ["Triston McKenzie","P",2020,2025,"AS"],
+            ["Tanner Bibee","P",2023,2025,""],
+            ["Hunter Gaddis","P",2023,2025,""],
+            ["Gavin Williams","P",2023,2025,""],
+            ["Cal Quantrill","P",2020,2024,""],
+            ["Logan Allen","P",2023,2025,"L"],
+            ["Emmanuel Clase","P",2020,2025,"AS"],
+            ["James Karinchak","P",2019,2024,""],
+            ["Eli Morgan","P",2021,2024,""],
+            ["Sam Hentges","P",2021,2024,"L"],
+            ["Cody Morris","P",2022,2024,""],
+            ["Slade Cecconi","P",2024,2025,""],
+            ["Joey Cantillo","P",2024,2025,"L"],
+            ["Ben Lively","P",2024,2025,""],
+            ["Cionel Pérez","P",2024,2025,"L"],
+            ["Tim Herrin","P",2023,2025,"L"],
+            ["Pedro Avila","P",2024,2025,""],
+            ["Andrew Walters","P",2024,2025,""],
+            ["Erik Sabrowski","P",2024,2025,"L"],
+            ["Cade Smith","P",2024,2025,""],
+            ["Trevor Stephan","P",2021,2024,""],
+            ["Aaron Civale","P",2019,2023,""],
+            ["Zach Plesac","P",2019,2023,"AS"],
+            ["Carlos Carrasco","P",2009,2023,"AS"],
+            ["Mike Clevinger","P",2016,2020,""],
+            ["Trevor Bauer","P",2013,2019,""],
+            ["Adam Plutko","P",2018,2020,""],
+            ["Phil Maton","P",2020,2021,""],
+            ["Nick Wittgren","P",2019,2021,""],
+            ["Bryan Shaw","P",2013,2022,""],
+            ["Oliver Pérez","P",2018,2021,"L"],
+            ["Tyler Olson","P",2017,2018,"L"],
+            ["Daniel Schneemann","IF",2024,2025,"L"],
+            ["Bo Naylor","C",2022,2025,"L"],
+            ["Austin Hedges","C",2020,2024,""],
+            ["David Fry","C",2023,2025,"AS"],
+            ["Jose Ramirez","IF",2013,2025,"AS,GG,SS"],
+            ["Andrés Giménez","IF",2021,2024,"AS,GG"],
+            ["Josh Naylor","IF",2020,2024,"AS,L"],
+            ["Brayan Rocchio","IF",2023,2025,""],
+            ["Tyler Freeman","IF",2022,2025,""],
+            ["Gabriel Arias","IF",2022,2025,""],
+            ["Kyle Manzardo","IF",2024,2025,"L"],
+            ["Steven Kwan","OF",2022,2025,"AS,GG,L"],
+            ["Will Brennan","OF",2022,2025,"L"],
+            ["Lane Thomas","OF",2024,2025,""],
+            ["Jhonkensy Noel","OF",2024,2025,""],
+            ["Estevan Florial","OF",2024,2025,"L"],
+            ["Nolan Jones","OF",2022,2023,"L"],
+            ["Daniel Johnson","OF",2020,2022,"L"],
+            ["Oscar Gonzalez","OF",2022,2023,""],
+            ["Myles Straw","OF",2021,2024,""],
+            ["Owen Miller","IF",2021,2022,""],
+            ["Amed Rosario","IF",2021,2023,""],
+            ["Yu Chang","IF",2019,2021,""],
+            ["César Hernández","IF",2019,2021,""],
+            ["Franmil Reyes","OF",2019,2022,""],
+            ["Jordan Luplow","OF",2019,2021,""],
+            ["Ramón Laureano","OF",2024,2025,""],
+            ["Chase DeLauter","OF",2025,2025,"L"],
+            ["Carlos Santana","IF",2010,2020,"AS,SS"],
+            ["Roberto Pérez","C",2014,2021,"GG"],
+            ["Yan Gomes","C",2012,2018,"AS"],
+            ["Bobby Bradley","IF",2019,2021,"L"],
+            ["Bradley Zimmer","OF",2017,2020,"L"],
+            ["Greg Allen","OF",2017,2020,""],
+            ["Leonys Martín","OF",2018,2018,"L"],
+            ["Edwin Encarnación","IF",2017,2018,"AS"],
+            ["Jay Bruce","OF",2017,2018,"L"],
+            ["Brandon Guyer","OF",2015,2018,""],
+            ["Rajai Davis","OF",2016,2018,""],
+            ["Yandy Díaz","IF",2017,2018,""],
+            ["Erik González","IF",2014,2018,""],
+            ["Lonnie Chisenhall","OF",2011,2017,"L"],
+            ["Tyler Naquin","OF",2016,2020,"L"],
+            ["Abraham Almonte","OF",2015,2017,""],
+            ["Melky Cabrera","OF",2017,2017,""],
+
+            // ===== 2010s Stars =====
+            ["Corey Kluber","P",2011,2019,"AS,CY"],
+            ["Justin Masterson","P",2009,2014,""],
+            ["Danny Salazar","P",2013,2018,""],
+            ["Scott Kazmir","P",2013,2014,"L"],
+            ["Ubaldo Jiménez","P",2011,2013,""],
+            ["Josh Tomlin","P",2010,2018,""],
+            ["Fausto Carmona","P",2006,2011,""],
+            ["Roberto Hernández","P",2006,2012,""],
+            ["Zach McAllister","P",2011,2017,""],
+            ["Vinnie Pestano","P",2010,2014,""],
+            ["Joe Smith","P",2009,2013,""],
+            ["Chris Perez","P",2009,2013,"AS"],
+            ["Cody Allen","P",2012,2018,""],
+            ["Andrew Miller","P",2016,2018,"AS,L"],
+            ["Bryan Shaw","P",2013,2017,""],
+            ["Francisco Lindor","IF",2015,2020,"AS,GG,SS"],
+            ["Jason Kipnis","IF",2011,2019,"AS"],
+            ["Asdrúbal Cabrera","IF",2007,2014,"AS"],
+            ["Mike Aviles","IF",2013,2015,""],
+            ["Jhonny Peralta","IF",2003,2010,""],
+            ["Michael Brantley","OF",2009,2018,"AS,SS,L"],
+            ["Travis Hafner","IF",2003,2012,"AS,SS,L"],
+            ["Carlos Santana","IF",2010,2020,"AS,SS"],
+            ["David Murphy","OF",2014,2015,"L"],
+            ["Nick Swisher","OF",2013,2016,"AS"],
+            ["Michael Bourn","OF",2013,2015,"L"],
+            ["Brandon Moss","OF",2015,2016,"L"],
+            ["Coco Crisp","OF",2002,2005,""],
+            ["Ryan Raburn","OF",2013,2015,""],
+            ["Mark Reynolds","IF",2013,2013,""],
+            ["Mike Napoli","IF",2016,2016,""],
+            ["Drew Stubbs","OF",2013,2013,""],
+
+            // ===== 2000s =====
+            ["CC Sabathia","P",2001,2008,"AS,CY,L"],
+            ["Cliff Lee","P",2002,2009,"AS,CY,L"],
+            ["Bartolo Colón","P",1997,2002,"AS"],
+            ["Bob Wickman","P",2000,2006,""],
+            ["Kerry Wood","P",2009,2010,""],
+            ["Joe Borowski","P",2007,2008,""],
+            ["Aaron Boone","IF",2005,2006,""],
+            ["Casey Blake","IF",2003,2008,""],
+            ["Ryan Garko","IF",2005,2009,""],
+            ["Ben Francisco","OF",2007,2009,""],
+            ["Grady Sizemore","OF",2004,2011,"AS,GG,SS,L"],
+            ["Shin-Soo Choo","OF",2006,2012,"L"],
+            ["Jamey Carroll","IF",2006,2007,""],
+            ["Josh Barfield","IF",2007,2009,""],
+            ["Ronnie Belliard","IF",2004,2006,""],
+            ["Orlando Cabrera","IF",2009,2009,""],
+            ["Russell Branyan","IF",1998,2010,"L"],
+            ["Brandon Phillips","IF",2002,2005,""],
+            ["Kelly Shoppach","C",2006,2009,""],
+            ["Sandy Alomar Jr.","C",1990,2000,"AS,ROY"],
+            ["Einar Díaz","C",1996,2002,""],
+            ["Josh Bard","C",2002,2005,"L"],
+            ["Jody Gerut","OF",2003,2005,"L"],
+            ["Jeromy Burnitz","OF",1995,2003,"AS,L"],
+            ["Ben Broussard","OF",2002,2006,"L"],
+            ["Trot Nixon","OF",2008,2008,"L"],
+            ["Franklin Gutiérrez","OF",2006,2008,""],
+            ["Jason Michaels","OF",2006,2008,""],
+            ["Víctor Martínez","C",2002,2009,"AS,SS"],
+            ["Travis Fryman","IF",1998,2002,"AS,GG"],
+            ["Roberto Alomar","IF",1999,2001,"AS,GG,SS,HOF"],
+            ["Omar Vizquel","IF",1994,2004,"AS,GG"],
+            ["Matt Lawton","OF",2002,2004,"AS,L"],
+            ["Milton Bradley","OF",2001,2003,""],
+
+            // ===== 1990s Dynasty =====
+            ["Jim Thome","IF",1991,2002,"AS,SS,HOF,L"],
+            ["Manny Ramirez","OF",1993,2000,"AS,SS"],
+            ["Albert Belle","OF",1989,1996,"AS,SS"],
+            ["Kenny Lofton","OF",1992,2007,"AS,GG,L"],
+            ["Carlos Baerga","IF",1990,1996,"AS,SS"],
+            ["Charles Nagy","P",1990,2002,"AS"],
+            ["Orel Hershiser","P",1995,1997,""],
+            ["Dennis Martínez","P",1994,1996,"AS"],
+            ["Eddie Murray","IF",1994,1996,"HOF"],
+            ["Matt Williams","IF",1997,1997,"AS"],
+            ["David Justice","OF",1997,2000,"AS,L"],
+            ["Marquis Grissom","OF",1997,1998,""],
+            ["Brian Giles","OF",1995,1998,"L"],
+            ["Wayne Kirby","OF",1991,1996,"L"],
+            ["Tony Peña","C",1994,1996,"GG"],
+            ["Glenallen Hill","OF",1991,1993,""],
+            ["Candy Maldonado","OF",1990,1993,""],
+            ["Reggie Jefferson","OF",1991,1993,"L"],
+            ["Mark Whiten","OF",1991,1996,""],
+            ["Félix Fermín","IF",1989,1994,""],
+            ["Álvaro Espinoza","IF",1993,1996,""],
+            ["Paul Sorrento","IF",1992,1995,"L"],
+            ["José Mesa","P",1992,1998,"AS"],
+            ["Eric Plunk","P",1992,1998,""],
+            ["Paul Assenmacher","P",1995,1999,"L"],
+            ["Mark Clark","P",1993,1995,""],
+            ["Jaret Wright","P",1997,2001,""],
+            ["Steve Karsay","P",1999,2001,""],
+            ["Bud Black","P",1988,1995,"L"],
+            ["Tom Candiotti","P",1986,1991,""],
+            ["Jack Morris","P",1994,1994,""],
+            ["Greg Swindell","P",1986,1991,"AS,L"],
+            ["Doug Jones","P",1986,1998,"AS"],
+            ["Steve Olin","P",1989,1992,""],
+            ["Dennis Cook","P",1992,1994,"L"],
+            ["Julián Tavárez","P",1993,1996,""],
+            ["Charles Nagy","P",1990,2002,"AS"],
+            ["Joe Klink","P",1994,1994,"L"],
+
+            // ===== 1980s =====
+            ["Bert Blyleven","P",1981,1985,"AS,HOF"],
+            ["Andre Thornton","IF",1977,1987,"AS"],
+            ["Joe Carter","OF",1984,1989,"AS"],
+            ["Cory Snyder","OF",1986,1990,""],
+            ["Brett Butler","OF",1984,1987,"L"],
+            ["Mel Hall","OF",1984,1988,"L"],
+            ["Julio Franco","IF",1983,1988,"AS"],
+            ["Tony Bernazard","IF",1984,1987,""],
+            ["Brook Jacoby","IF",1984,1991,"AS"],
+            ["Chris Bando","C",1981,1988,""],
+            ["Joe Charboneau","OF",1980,1982,"ROY"],
+            ["Bo Diaz","C",1978,1981,"AS"],
+            ["Toby Harrah","IF",1979,1983,"AS"],
+            ["Mike Hargrove","IF",1979,1985,"AS,L"],
+            ["Rick Manning","OF",1975,1983,"L"],
+            ["Len Barker","P",1979,1983,"AS"],
+            ["Rick Sutcliffe","P",1982,1984,"AS"],
+            ["Rick Waits","P",1975,1983,"L"],
+            ["John Denny","P",1974,1980,""],
+            ["Wayne Garland","P",1977,1981,""],
+            ["Don Hood","P",1975,1979,"L"],
+            ["Pat Tabler","IF",1983,1988,""],
+            ["Carmelo Castillo","OF",1982,1988,""],
+            ["Ron Hassey","C",1978,1984,"L"],
+            ["Andy Allanson","C",1986,1989,""],
+            ["Otis Nixon","OF",1984,1987,"L"],
+            ["Phil Niekro","P",1986,1987,"HOF"],
+
+            // ===== 1970s =====
+            ["Gaylord Perry","P",1972,1975,"CY,HOF"],
+            ["Sam McDowell","P",1961,1971,"AS,L"],
+            ["Steve Hargan","P",1965,1972,""],
+            ["Dick Bosman","P",1973,1975,""],
+            ["Jim Perry","P",1959,1963,"AS,CY"],
+            ["Dennis Eckersley","P",1975,1977,"HOF"],
+            ["Frank Robinson","OF",1974,1976,"AS,HOF"],
+            ["Boog Powell","IF",1975,1976,"AS,L"],
+            ["Buddy Bell","IF",1972,1978,"AS,GG"],
+            ["George Hendrick","OF",1973,1976,"AS"],
+            ["Charlie Spikes","OF",1973,1977,""],
+            ["John Lowenstein","OF",1970,1977,"L"],
+            ["Duane Kuiper","IF",1974,1981,"L"],
+            ["Frank Duffy","IF",1972,1977,""],
+            ["Tom Veryzer","IF",1978,1981,""],
+            ["Rico Carty","OF",1974,1977,""],
+            ["Larry Hisle","OF",1977,1977,""],
+            ["Oscar Gamble","OF",1973,1975,"L"],
+            ["Chris Chambliss","IF",1971,1974,"L"],
+            ["John Ellis","C",1973,1975,""],
+            ["Alan Ashby","C",1973,1976,""],
+            ["Dave Duncan","C",1973,1974,"AS"],
+            ["Ray Fosse","C",1967,1976,"AS,GG"],
+            ["Fritz Peterson","P",1974,1976,"L"],
+            ["Jim Bibby","P",1975,1977,""],
+            ["Pat Dobson","P",1976,1977,""],
+            ["Stan Williams","P",1970,1972,""],
+            ["Buddy Bell","IF",1972,1978,"AS,GG"],
+
+            // ===== 1960s =====
+            ["Rocky Colavito","OF",1955,1967,"AS"],
+            ["Sonny Siebert","P",1964,1969,"AS"],
+            ["Luis Tiant","P",1964,1969,""],
+            ["Mudcat Grant","P",1958,1964,"AS"],
+            ["Jack Kralick","P",1963,1967,"AS,L"],
+            ["Gary Bell","P",1958,1967,"AS"],
+            ["Tommy John","P",1963,1964,"L"],
+            ["Dean Chance","P",1970,1971,"CY"],
+            ["Max Alvis","IF",1962,1969,"AS"],
+            ["Larry Brown","IF",1963,1971,""],
+            ["Vern Fuller","IF",1964,1970,""],
+            ["Tony Horton","IF",1967,1970,""],
+            ["Fred Whitfield","IF",1963,1967,"L"],
+            ["Pedro González","IF",1965,1967,""],
+            ["Chuck Hinton","OF",1965,1971,""],
+            ["Leon Wagner","OF",1964,1968,"AS,L"],
+            ["Vic Davalillo","OF",1963,1968,"AS,L"],
+            ["José Cardenal","OF",1968,1969,""],
+            ["Tito Francona","OF",1959,1964,"AS,L"],
+            ["Joe Azcue","C",1963,1969,"AS"],
+            ["Duke Sims","C",1964,1970,"L"],
+            ["Tommie Agee","OF",1962,1964,""],
+
+            // ===== 1950s =====
+            ["Bob Feller","P",1936,1956,"AS,HOF"],
+            ["Bob Lemon","P",1941,1958,"AS,HOF"],
+            ["Early Wynn","P",1949,1957,"AS,CY,HOF"],
+            ["Mike Garcia","P",1948,1959,"AS"],
+            ["Herb Score","P",1955,1962,"AS,L"],
+            ["Cal McLish","P",1956,1959,"AS"],
+            ["Don Mossi","P",1954,1958,"L"],
+            ["Ray Narleski","P",1954,1958,"AS"],
+            ["Hal Newhouser","P",1954,1955,"HOF,L"],
+            ["Art Houtteman","P",1953,1957,""],
+            ["Bobby Avila","IF",1949,1958,"AS"],
+            ["Larry Doby","OF",1947,1955,"AS,HOF,L"],
+            ["Al Rosen","IF",1947,1956,"AS,MVP"],
+            ["Vic Wertz","OF",1954,1958,"AS,L"],
+            ["Luke Easter","IF",1949,1954,"L"],
+            ["Minnie Miñoso","OF",1949,1958,"AS,GG,HOF"],
+            ["Jim Hegan","C",1941,1957,"AS"],
+            ["Russ Nixon","C",1957,1960,""],
+            ["George Strickland","IF",1952,1960,""],
+            ["Al Smith","OF",1953,1957,"AS"],
+            ["Wally Westlake","OF",1952,1955,""],
+            ["Dale Mitchell","OF",1946,1956,"AS,L"],
+            ["Vic Power","IF",1958,1961,"AS,GG"],
+            ["Roger Maris","OF",1957,1958,"L"],
+            ["Hoyt Wilhelm","P",1957,1958,"HOF"],
+
+            // ===== 1940s =====
+            ["Lou Boudreau","IF",1938,1950,"AS,MVP,HOF"],
+            ["Ken Keltner","IF",1937,1949,"AS"],
+            ["Joe Gordon","IF",1947,1950,"AS,HOF"],
+            ["Hal Trosky","IF",1933,1941,"AS,L"],
+            ["Allie Reynolds","P",1942,1946,""],
+            ["Steve Gromek","P",1941,1953,"AS"],
+            ["Gene Bearden","P",1947,1950,"AS,L"],
+            ["Mel Harder","P",1928,1947,"AS"],
+            ["Sam Zoldak","P",1948,1950,"L"],
+            ["Mickey Vernon","IF",1949,1958,"AS,L"],
+            ["Eddie Robinson","IF",1942,1948,"AS,L"],
+            ["Pat Seerey","OF",1943,1948,""],
+            ["Roy Cullenbine","OF",1943,1947,"L"],
+            ["Hank Edwards","OF",1941,1949,"L"],
+            ["Allie Clark","OF",1948,1951,""],
+            ["Thurman Tucker","OF",1948,1951,"L"],
+            ["Don Black","P",1946,1948,""],
+            ["Eddie Klieman","P",1944,1948,""],
+            ["Satchel Paige","P",1948,1949,"AS,HOF"],
+            ["Jim Bagby Jr.","P",1941,1945,"AS"],
+            ["Hal Peck","OF",1947,1949,"L"],
+
+            // ===== 1930s =====
+            ["Earl Averill","OF",1929,1939,"AS,HOF"],
+            ["Joe Vosmik","OF",1930,1936,"AS"],
+            ["Wes Ferrell","P",1927,1933,"AS"],
+            ["Willis Hudlin","P",1926,1940,""],
+            ["Johnny Allen","P",1936,1940,"AS"],
+            ["Frankie Pytlak","C",1932,1940,""],
+            ["Bruce Campbell","OF",1935,1939,""],
+            ["Bill Knickerbocker","IF",1933,1936,""],
+            ["Eddie Morgan","IF",1928,1933,"L"],
+            ["Boze Berger","IF",1932,1936,""],
+            ["Bibb Falk","OF",1929,1931,"L"],
+            ["Dick Porter","OF",1929,1934,"L"],
+            ["Glenn Myatt","C",1923,1935,"L"],
+            ["Lew Fonseca","IF",1929,1931,"L"],
+            ["Oral Hildebrand","P",1931,1936,"AS"],
+            ["Monte Pearson","P",1932,1935,""],
+
+            // ===== 1920s (1920 World Series Champions) =====
+            ["Tris Speaker","OF",1916,1926,"HOF,L"],
+            ["Stan Coveleski","P",1916,1924,"HOF"],
+            ["Joe Sewell","IF",1920,1930,"HOF,L"],
+            ["Charlie Jamieson","OF",1919,1932,"L"],
+            ["Steve O'Neill","C",1911,1923,""],
+            ["Bill Wambsganss","IF",1914,1923,""],
+            ["Jim Bagby Sr.","P",1916,1922,""],
+            ["George Burns","IF",1920,1928,"MVP"],
+            ["Larry Gardner","IF",1919,1924,"L"],
+            ["Elmer Smith","OF",1914,1921,"L"],
+            ["George Uhle","P",1919,1928,"AS"],
+            ["Joe Wood","P",1917,1922,""],
+            ["Guy Morton","P",1914,1924,""],
+            ["Sherry Smith","P",1922,1927,"L"],
+            ["Walter Mails","P",1920,1921,"L"],
+            ["Wally Schang","C",1929,1930,"L"],
+            ["Pat McNulty","OF",1922,1927,"L"],
+            ["Homer Summa","OF",1922,1928,"L"],
+            ["Riggs Stephenson","OF",1921,1925,""],
+            ["Doc Johnston","IF",1912,1921,"L"],
+            ["Ray Chapman","IF",1912,1920,""],
+            ["Luke Sewell","C",1921,1932,""],
+
+            // ===== Early Era (1901-1919) =====
+            ["Cy Young","P",1901,1911,"HOF"],
+            ["Nap Lajoie","IF",1902,1914,"HOF"],
+            ["Napoleon Lajoie","IF",1902,1914,"HOF"],
+            ["Addie Joss","P",1902,1910,"HOF"],
+            ["Elmer Flick","OF",1902,1910,"HOF,L"],
+            ["Joe Jackson","OF",1910,1915,"L"],
+            ["Shoeless Joe Jackson","OF",1910,1915,"L"],
+            ["Bill Bradley","IF",1901,1910,""],
+            ["Charlie Hickman","OF",1902,1908,""],
+            ["Jack Graney","OF",1908,1922,"L"],
+            ["Joe Birmingham","OF",1906,1914,""],
+            ["Terry Turner","IF",1904,1918,""],
+            ["Earl Moore","P",1901,1907,""],
+            ["Bob Rhoads","P",1903,1909,""],
+            ["Otto Hess","P",1902,1908,"L"],
+            ["Vean Gregg","P",1911,1914,"L"],
+            ["Cy Falkenberg","P",1908,1916,""],
+            ["George Stovall","IF",1904,1911,""],
+            ["Harry Bay","OF",1902,1908,"L"],
+            ["Willie Mitchell","P",1909,1916,"L"],
+            ["Harry Bemis","C",1902,1910,""],
+            ["Nig Clarke","C",1905,1910,"L"],
+            ["Bill Bernhard","P",1902,1907,""],
+            ["Heinie Berger","P",1907,1910,""],
+            ["Glenn Liebhardt","P",1906,1909,""],
+
+            // ===== Notable role players & cup-of-coffee guys =====
+            ["Wes Parsons","P",2021,2021,""],
+            ["Karim García","OF",2000,2001,"L"],
+            ["Russell Branyan","IF",2002,2010,"L"],
+            ["Travis Hafner","IF",2003,2012,"AS,SS,L"],
+            ["Mark Shapiro","IF",2003,2004,""],
+            ["Edgar Renteria","IF",2009,2009,""],
+            ["Jason Giambi","IF",2013,2014,"L"],
+            ["Yonder Alonso","IF",2018,2018,"L"],
+            ["Jhonkensy Noel","OF",2024,2025,""],
+            ["Hanley Ramírez","IF",2018,2018,""],
+            ["Joe Inglett","IF",2006,2008,"L"],
+            ["Jason Donald","IF",2010,2012,""],
+            ["Lou Marson","C",2009,2013,""],
+            ["Yan Gomes","C",2012,2018,"AS"],
+            ["Roberto Pérez","C",2014,2021,"GG"],
+            ["Matt LaPorta","IF",2009,2012,""],
+            ["Cord Phelps","IF",2011,2013,"L"],
+            ["Lonnie Chisenhall","OF",2011,2017,"L"],
+            ["Jack Hannahan","IF",2011,2012,"L"],
+            ["Trevor Crowe","OF",2009,2010,""],
+            ["Ramón Vázquez","IF",2009,2009,""],
+            ["Wladimir Balentien","OF",2009,2009,""],
+            ["Frank Herrmann","P",2010,2012,""],
+            ["Hector Ambriz","P",2010,2010,""],
+            ["Aaron Laffey","P",2007,2010,"L"],
+            ["David Huff","P",2009,2013,"L"],
+            ["Jeremy Sowers","P",2006,2009,"L"],
+            ["Tomo Ohka","P",2009,2009,""],
+            ["Anthony Reyes","P",2008,2010,""],
+            ["Justin Germano","P",2009,2010,""],
+            ["Carl Pavano","P",2009,2010,""],
+
+            // Additional historical players
+            ["Bob Lemon","P",1941,1958,"AS,HOF"],
+            ["Joe Adcock","IF",1963,1963,""],
+            ["Cecil Fielder","IF",1998,1998,""],
+            ["Don Newcombe","P",1960,1960,""],
+            ["Dave Winfield","OF",1995,1995,""],
+            ["Harold Baines","OF",1999,1999,"L"],
+            ["Steve Carlton","P",1987,1987,"HOF,L"],
+            ["Ralph Kiner","OF",1955,1955,"HOF"],
+            ["Phil Niekro","P",1986,1987,"HOF"],
+            ["Tony Fernández","IF",1997,1997,""],
+            ["Marty Cordova","OF",2001,2001,""],
+            ["Juan González","OF",2001,2001,""],
+            ["Ellis Burks","OF",2001,2003,""],
+            ["Karim García","OF",2000,2001,"L"],
+            ["Richie Sexson","IF",1997,2000,""],
+            ["Geronimo Berroa","OF",1996,1996,""],
+            ["Julian Tavarez","P",1993,1996,""]
+        ];
+
+        // Convert raw player data to enhanced player objects, deduplicating by name
+        const positionMap = {
+            "P": "Pitcher",
+            "C": "Catcher",
+            "IF": "Infielder",
+            "OF": "Outfielder"
+        };
+
+        const awardMap = {
+            "AS": "All-Star",
+            "GG": "Gold Glove",
+            "SS": "Silver Slugger",
+            "CY": "Cy Young",
+            "MVP": "MVP",
+            "HOF": "Hall of Fame",
+            "ROY": "Rookie of the Year"
+        };
+
+        const playerByName = {};
+        playerData.forEach(p => {
+            const [name, pos, startYear, endYear, awardsStr] = p;
+            const awards = awardsStr ? awardsStr.split(',') : [];
+
+            const years = [];
+            for (let y = Number(startYear); y <= Number(endYear); y++) {
+                years.push(y);
+            }
+
+            const fullAwards = awards
+                .filter(a => a !== "L")
+                .map(a => awardMap[a] || a);
+
+            const hand = awards.includes("L") ? "L" : "R";
+
+            if (playerByName[name]) {
+                // Merge with existing entry (handles duplicates)
+                const existing = playerByName[name];
+                existing.years = [...new Set([...existing.years, ...years])].sort();
+                existing.awards = [...new Set([...existing.awards, ...fullAwards])];
+            } else {
+                playerByName[name] = {
+                    name: name,
+                    position: positionMap[pos] || pos,
+                    years: years,
+                    awards: fullAwards,
+                    teams: ["CLE"],
+                    hand: hand
+                };
+            }
+        });
+
+        const guardiansPlayers = Object.values(playerByName);
+
+        // Stat-based player lists (with Cleveland)
+        const statTags = {
+            // Hitting
+            ba300: ["Tris Speaker","Joe Jackson","Nap Lajoie","Napoleon Lajoie","Shoeless Joe Jackson","Earl Averill","Hal Trosky","Charlie Jamieson","Joe Sewell","Manny Ramirez","Roberto Alomar","Kenny Lofton","Joe Vosmik","Riggs Stephenson","Elmer Flick","George Burns","Bibb Falk","Lew Fonseca","Dale Mitchell","Bobby Avila","Steven Kwan"],
+            hr200: ["Jim Thome","Albert Belle","Manny Ramirez","Earl Averill","Hal Trosky","Larry Doby","Andre Thornton","Travis Hafner","Jose Ramirez","Carlos Santana"],
+            hr300: ["Jim Thome"],
+            hr30Season: ["Jim Thome","Albert Belle","Manny Ramirez","Travis Hafner","Jose Ramirez","Rocky Colavito","Hal Trosky","Larry Doby","Carlos Santana","Josh Donaldson","Earl Averill","Andre Thornton","Joe Carter","Brook Jacoby","Edwin Encarnación","Yan Gomes","Carlos Baerga","Grady Sizemore","Josh Naylor","Russell Branyan","Juan González","Jay Bruce","Jim Hegan","Mike Napoli"],
+            hr40Season: ["Jim Thome","Albert Belle","Manny Ramirez","Rocky Colavito","Travis Hafner","Hal Trosky","Edwin Encarnación","Jose Ramirez"],
+            rbi100Season: ["Jim Thome","Albert Belle","Manny Ramirez","Travis Hafner","Hal Trosky","Earl Averill","Larry Doby","Andre Thornton","Joe Carter","Jose Ramirez","Carlos Baerga","Travis Fryman","Edwin Encarnación","Carlos Santana","Brook Jacoby","Al Rosen","Vic Wertz","Rocky Colavito","Roberto Alomar","Juan González","Jim Hegan","Bobby Bonds","Joe Vosmik","Kenny Lofton","Roy Cullenbine","Nap Lajoie","Napoleon Lajoie","Earl Averill","Ken Keltner"],
+            sb40Season: ["Kenny Lofton","Brett Butler","Miguel Diloné","Otis Nixon","Rajai Davis","Steven Kwan","Jose Ramirez","Coco Crisp","Michael Bourn","Roberto Alomar","Omar Moreno","Jolbert Cabrera"],
+            sb300Career: ["Kenny Lofton","Tris Speaker","Charlie Jamieson","Nap Lajoie","Napoleon Lajoie","Omar Vizquel","Jose Ramirez"],
+            hits2000: ["Nap Lajoie","Napoleon Lajoie","Tris Speaker","Earl Averill","Lou Boudreau","Jim Thome","Charlie Jamieson","Jose Ramirez","Omar Vizquel","Joe Sewell","Ken Keltner"],
+
+            // Pitching
+            wins200: ["Bob Feller","Mel Harder","Bob Lemon"],
+            wins100: ["Bob Feller","Mel Harder","Bob Lemon","Early Wynn","Stan Coveleski","Cy Young","Addie Joss","Mike Garcia","Sam McDowell","Charles Nagy","George Uhle","Wes Ferrell","Willis Hudlin","Gaylord Perry","Carlos Carrasco","Corey Kluber","CC Sabathia"],
+            wins20Season: ["Bob Feller","Bob Lemon","Early Wynn","Mike Garcia","Wes Ferrell","Stan Coveleski","Addie Joss","George Uhle","Cy Young","Cliff Lee","Gaylord Perry","Sam McDowell","Jim Bagby Sr.","Vean Gregg","Mel Harder","Sonny Siebert","Charles Nagy","Jim Perry"],
+            strikeouts1500: ["Bob Feller","Sam McDowell","CC Sabathia","Corey Kluber","Charles Nagy","Mel Harder","Bob Lemon","Early Wynn"],
+            strikeouts2000: ["Bob Feller","Sam McDowell"],
+            era3career: ["Addie Joss","Stan Coveleski","Bob Feller","Mel Harder","Bob Lemon","Sam McDowell","Cy Young","Corey Kluber","Shane Bieber","Cliff Lee","CC Sabathia","Carlos Carrasco","Gaylord Perry","Vean Gregg","Jim Bagby Sr.","Otto Hess","Bill Bernhard","Earl Moore"],
+            saves100: ["Cody Allen","José Mesa","Doug Jones","Bob Wickman","Emmanuel Clase","Chris Perez","Joe Heving"],
+            saves200: ["Cody Allen","Emmanuel Clase"],
+            noHitter: ["Bob Feller","Len Barker","Sonny Siebert","Dick Bosman","Dennis Eckersley","Addie Joss","Bob Lemon","Earl Moore"],
+
+            // Honors
+            allStar3plus: ["Bob Feller","Lou Boudreau","Earl Averill","Larry Doby","Ken Keltner","Sandy Alomar Jr.","Carlos Baerga","Jim Hegan","Bob Lemon","Mel Harder","Joe Sewell","Hal Trosky","José Ramírez","Jose Ramirez","Jim Thome","Albert Belle","Manny Ramirez","Kenny Lofton","Bobby Avila","Al Rosen","Travis Hafner","Sam McDowell","Roberto Alomar","Omar Vizquel","Andrés Giménez","Steven Kwan","Carlos Santana","Francisco Lindor","Travis Fryman","Andre Thornton","Rocky Colavito","Doug Jones","Brook Jacoby"],
+            worldSeriesChamp: ["Bob Feller","Lou Boudreau","Larry Doby","Bob Lemon","Ken Keltner","Jim Hegan","Joe Gordon","Gene Bearden","Mike Garcia","Early Wynn","Steve Gromek","Satchel Paige","Allie Clark","Hal Peck","Eddie Robinson","Stan Coveleski","Tris Speaker","Charlie Jamieson","Joe Sewell","Bill Wambsganss","Steve O'Neill","George Burns","Jim Bagby Sr.","Elmer Smith","Doc Johnston"]
+        };
+
+        // Helper to check if player has a stat tag
+        function hasStatTag(player, tag) {
+            const list = statTags[tag];
+            if (!list) return false;
+            return list.includes(player.name);
+        }
+
+        // Game state
+        let gameState = [
+            [null, null, null],
+            [null, null, null],
+            [null, null, null]
+        ];
+
+        let currentCell = null;
+        let selectedRowCriteria = [];
+        let selectedColumnCriteria = [];
+
+        // All possible criteria
+        const allRowCriteria = [
+            { label: "2024 Guardians", desc: "Played at least one game in 2024", check: (p) => p.years.includes(2024) },
+            { label: "2023 Guardians", desc: "Played at least one game in 2023", check: (p) => p.years.includes(2023) },
+            { label: "2022 Guardians", desc: "Played at least one game in 2022", check: (p) => p.years.includes(2022) },
+            { label: "2021 Guardians", desc: "Played at least one game in 2021", check: (p) => p.years.includes(2021) },
+            { label: "2020 Guardians", desc: "Played at least one game in 2020", check: (p) => p.years.includes(2020) },
+            { label: "2019 Guardians", desc: "Played at least one game in 2019", check: (p) => p.years.includes(2019) },
+            { label: "2010s Player", desc: "Played at least one game in the 2010s", check: (p) => p.years.some(y => y >= 2010 && y <= 2019) },
+            { label: "2000s Player", desc: "Played at least one game in the 2000s", check: (p) => p.years.some(y => y >= 2000 && y <= 2009) },
+            { label: "1990s Player", desc: "Played at least one game in the 1990s", check: (p) => p.years.some(y => y >= 1990 && y <= 1999) },
+            { label: "1980s Player", desc: "Played at least one game in the 1980s", check: (p) => p.years.some(y => y >= 1980 && y <= 1989) },
+            { label: "1970s Player", desc: "Played at least one game in the 1970s", check: (p) => p.years.some(y => y >= 1970 && y <= 1979) },
+            { label: "1960s Player", desc: "Played at least one game in the 1960s", check: (p) => p.years.some(y => y >= 1960 && y <= 1969) },
+            { label: "1950s Player", desc: "Played at least one game in the 1950s", check: (p) => p.years.some(y => y >= 1950 && y <= 1959) },
+            { label: "Pre-1950 Player", desc: "Played at least one game before 1950", check: (p) => p.years.some(y => y < 1950) },
+            { label: "All-Star", desc: "Selected to at least one All-Star Game", check: (p) => p.awards.includes("All-Star") },
+            { label: "Gold Glove Winner", desc: "Won at least one Gold Glove", check: (p) => p.awards.includes("Gold Glove") },
+            { label: "Silver Slugger", desc: "Won at least one Silver Slugger Award", check: (p) => p.awards.includes("Silver Slugger") },
+            { label: "Cy Young Winner", desc: "Won at least one Cy Young Award", check: (p) => p.awards.includes("Cy Young") },
+            { label: "MVP Winner", desc: "Won the MVP Award", check: (p) => p.awards.includes("MVP") },
+            { label: "Hall of Famer", desc: "Inducted into the Baseball Hall of Fame", check: (p) => p.awards.includes("Hall of Fame") },
+            { label: "Rookie of the Year", desc: "Won the Rookie of the Year Award", check: (p) => p.awards.includes("Rookie of the Year") },
+            { label: "10+ Year Career", desc: "Played 10 or more seasons with Cleveland", check: (p) => p.years.length >= 10 },
+            { label: "5+ Year Career", desc: "Played 5 or more seasons with Cleveland", check: (p) => p.years.length >= 5 },
+            { label: "One-Year Wonder", desc: "Played only one season with Cleveland", check: (p) => p.years.length === 1 },
+
+            // Stat-based criteria (hitting)
+            { label: ".300+ Career BA", desc: "Career batting avg of .300+ with Cleveland", check: (p) => hasStatTag(p, "ba300") },
+            { label: "200+ Career HR", desc: "Hit 200+ home runs with Cleveland", check: (p) => hasStatTag(p, "hr200") },
+            { label: "300+ Career HR", desc: "Hit 300+ home runs with Cleveland", check: (p) => hasStatTag(p, "hr300") },
+            { label: "30+ HR Season", desc: "Hit 30+ home runs in a season with Cleveland", check: (p) => hasStatTag(p, "hr30Season") },
+            { label: "40+ HR Season", desc: "Hit 40+ home runs in a season with Cleveland", check: (p) => hasStatTag(p, "hr40Season") },
+            { label: "100+ RBI Season", desc: "Drove in 100+ runs in a season with Cleveland", check: (p) => hasStatTag(p, "rbi100Season") },
+            { label: "40+ Steal Season", desc: "Stole 40+ bases in a season with Cleveland", check: (p) => hasStatTag(p, "sb40Season") },
+            { label: "300+ Career SB", desc: "Stole 300+ bases with Cleveland", check: (p) => hasStatTag(p, "sb300Career") },
+            { label: "2000+ Career Hits", desc: "Recorded 2000+ hits with Cleveland", check: (p) => hasStatTag(p, "hits2000") },
+
+            // Stat-based criteria (pitching)
+            { label: "200+ Career Wins", desc: "Won 200+ games with Cleveland", check: (p) => hasStatTag(p, "wins200") },
+            { label: "100+ Career Wins", desc: "Won 100+ games with Cleveland", check: (p) => hasStatTag(p, "wins100") },
+            { label: "20-Win Season", desc: "Won 20+ games in a season with Cleveland", check: (p) => hasStatTag(p, "wins20Season") },
+            { label: "1500+ Career K", desc: "1500+ career strikeouts with Cleveland", check: (p) => hasStatTag(p, "strikeouts1500") },
+            { label: "2000+ Career K", desc: "2000+ career strikeouts with Cleveland", check: (p) => hasStatTag(p, "strikeouts2000") },
+            { label: "Sub-3.00 Career ERA", desc: "Career ERA under 3.00 with Cleveland", check: (p) => hasStatTag(p, "era3career") },
+            { label: "100+ Career Saves", desc: "Recorded 100+ saves with Cleveland", check: (p) => hasStatTag(p, "saves100") },
+            { label: "200+ Career Saves", desc: "Recorded 200+ saves with Cleveland", check: (p) => hasStatTag(p, "saves200") },
+            { label: "Threw a No-Hitter", desc: "Threw a no-hitter for Cleveland", check: (p) => hasStatTag(p, "noHitter") },
+
+            // Honors
+            { label: "3x All-Star", desc: "Selected to 3+ All-Star Games with Cleveland", check: (p) => hasStatTag(p, "allStar3plus") },
+            { label: "World Series Champ", desc: "Won a World Series with Cleveland (1920 or 1948)", check: (p) => hasStatTag(p, "worldSeriesChamp") }
+        ];
+
+        const allColumnCriteria = [
+            { label: "Pitcher", desc: "Primary position is pitcher", check: (p) => p.position === "Pitcher" },
+            { label: "Catcher", desc: "Primary position is catcher", check: (p) => p.position === "Catcher" },
+            { label: "Infielder", desc: "Primary position is infield", check: (p) => p.position === "Infielder" },
+            { label: "Outfielder", desc: "Primary position is outfield", check: (p) => p.position === "Outfielder" },
+            { label: "Right-Handed", desc: "Bats or throws right-handed", check: (p) => p.hand === "R" },
+            { label: "Left-Handed", desc: "Bats or throws left-handed", check: (p) => p.hand === "L" },
+            { label: "Position Player", desc: "Plays any position other than pitcher", check: (p) => p.position !== "Pitcher" }
+        ];
+
+        function getCriteria(row, col) {
+            return `${selectedRowCriteria[row].label} + ${selectedColumnCriteria[col].label}`;
+        }
+
+        function getPlayersForCell(row, col) {
+            return guardiansPlayers.filter(player => {
+                const rowMatch = selectedRowCriteria[row].check(player);
+                const colMatch = selectedColumnCriteria[col].check(player);
+                return rowMatch && colMatch;
+            });
+        }
+
+        function selectRandomCriteria() {
+            const shuffled = (arr) => {
+                const copy = [...arr];
+                for (let i = copy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [copy[i], copy[j]] = [copy[j], copy[i]];
+                }
+                return copy;
+            };
+
+            // Try multiple times to get a valid combination where all 9 cells have at least one player
+            for (let attempt = 0; attempt < 100; attempt++) {
+                const rows = shuffled(allRowCriteria).slice(0, 3);
+                const cols = shuffled(allColumnCriteria).slice(0, 3);
+
+                let valid = true;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        const matches = guardiansPlayers.filter(p =>
+                            rows[r].check(p) && cols[c].check(p)
+                        );
+                        if (matches.length === 0) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (!valid) break;
+                }
+
+                if (valid) {
+                    selectedRowCriteria = rows;
+                    selectedColumnCriteria = cols;
+                    return;
+                }
+            }
+
+            // Fallback if no valid combination found
+            selectedRowCriteria = shuffled(allRowCriteria).slice(0, 3);
+            selectedColumnCriteria = shuffled(allColumnCriteria).slice(0, 3);
+        }
+
+        function initializeGame() {
+            selectRandomCriteria();
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const gridWrapper = document.getElementById('gridWrapper');
+            gridWrapper.innerHTML = '';
+
+            const emptyCell = createDiv('grid-label-cell empty', '');
+            gridWrapper.appendChild(emptyCell);
+
+            for (let col = 0; col < 3; col++) {
+                const label = createLabelCell('grid-label-cell col-label', selectedColumnCriteria[col]);
+                gridWrapper.appendChild(label);
+            }
+
+            for (let row = 0; row < 3; row++) {
+                const rowLabel = createLabelCell('grid-label-cell row-label', selectedRowCriteria[row]);
+                gridWrapper.appendChild(rowLabel);
+
+                for (let col = 0; col < 3; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.setAttribute('data-row', row);
+                    cell.setAttribute('data-col', col);
+
+                    if (gameState[row][col]) {
+                        cell.classList.add('filled');
+                        if (!gameState[row][col].correct) {
+                            cell.classList.add('wrong');
+                        }
+                        cell.innerHTML = `<div class="grid-cell-player">${gameState[row][col].name}</div>`;
+                    } else {
+                        cell.onclick = () => openModal(row, col);
+                    }
+
+                    gridWrapper.appendChild(cell);
+                }
+            }
+
+            updateStats();
+        }
+
+        function createDiv(className, text) {
+            const div = document.createElement('div');
+            div.className = className;
+            div.textContent = text;
+            return div;
+        }
+
+        function createLabelCell(className, criteria) {
+            const div = document.createElement('div');
+            div.className = className;
+            div.innerHTML = `<div class="label-title">${criteria.label}</div><div class="label-desc">${criteria.desc}</div>`;
+            return div;
+        }
+
+        function openModal(row, col) {
+            currentCell = { row, col };
+            const criteria = getCriteria(row, col);
+            document.getElementById('modalCriteria').textContent = criteria;
+            document.getElementById('playerInput').value = '';
+            document.getElementById('errorMessage').textContent = '';
+            document.getElementById('suggestions').innerHTML = '';
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('playerInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            currentCell = null;
+        }
+
+        document.getElementById('playerInput').addEventListener('input', (e) => {
+            const value = e.target.value.trim();
+            const suggestionsDiv = document.getElementById('suggestions');
+            const errorDiv = document.getElementById('errorMessage');
+
+            suggestionsDiv.innerHTML = '';
+            errorDiv.textContent = '';
+            document.getElementById('submitBtn').disabled = true;
+
+            if (value.length < 2) return;
+
+            const usedNames = gameState.flat().filter(p => p !== null).map(p => p.name);
+
+            const matches = guardiansPlayers.filter(p =>
+                p.name.toLowerCase().includes(value.toLowerCase()) &&
+                !usedNames.includes(p.name)
+            ).slice(0, 8);
+
+            if (matches.length > 0) {
+                matches.forEach(player => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion';
+                    div.textContent = player.name;
+                    div.onclick = () => {
+                        document.getElementById('playerInput').value = player.name;
+                        document.getElementById('submitBtn').disabled = false;
+                        suggestionsDiv.innerHTML = '';
+                    };
+                    suggestionsDiv.appendChild(div);
+                });
+                document.getElementById('submitBtn').disabled = false;
+            } else if (guardiansPlayers.some(p => p.name.toLowerCase() === value.toLowerCase())) {
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        function submitPlayer() {
+            const playerName = document.getElementById('playerInput').value.trim();
+            const { row, col } = currentCell;
+
+            const player = guardiansPlayers.find(p => p.name.toLowerCase() === playerName.toLowerCase());
+
+            if (!player) {
+                document.getElementById('errorMessage').textContent = 'Player not found in database';
+                return;
+            }
+
+            const usedNames = gameState.flat().filter(p => p !== null).map(p => p.name);
+            if (usedNames.includes(player.name)) {
+                document.getElementById('errorMessage').textContent = 'Player already used';
+                return;
+            }
+
+            const validPlayers = getPlayersForCell(row, col);
+            const isCorrect = validPlayers.some(p => p.name === player.name);
+
+            gameState[row][col] = { name: player.name, correct: isCorrect };
+            closeModal();
+            renderGrid();
+
+            if (gameState.flat().every(p => p !== null)) {
+                showSummary();
+            }
+        }
+
+        document.getElementById('playerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.getElementById('submitBtn').disabled) {
+                submitPlayer();
+            }
+        });
+
+        function updateStats() {
+            const filled = gameState.flat().filter(p => p !== null).length;
+            document.getElementById('filledCount').textContent = filled;
+        }
+
+        function giveUp() {
+            showSummary();
+        }
+
+        function getValidPlayerNames(row, col) {
+            const validPlayers = getPlayersForCell(row, col);
+            if (validPlayers.length === 0) return '<em>No matching players in database</em>';
+            const names = validPlayers.map(p => p.name).sort();
+            const limit = 30;
+            if (names.length <= limit) return names.join(', ');
+            return names.slice(0, limit).join(', ') + ` <em>...and ${names.length - limit} more</em>`;
+        }
+
+        function showSummary() {
+            const filled = gameState.flat().filter(p => p !== null);
+            const correctCount = filled.filter(p => p.correct).length;
+            const totalFilled = filled.length;
+            const allFilled = totalFilled === 9;
+
+            const summaryTitle = document.getElementById('summaryTitle');
+            const summaryText = document.getElementById('summaryText');
+
+            if (allFilled && correctCount === 9) {
+                summaryTitle.textContent = "Perfect Lineup";
+                summaryText.textContent = "Nine for nine. A flawless Cleveland card.";
+            } else if (allFilled) {
+                summaryTitle.textContent = "Final Box Score";
+                summaryText.textContent = `You hit ${correctCount} of 9. Tap a red cell to scout who would've worked.`;
+            } else {
+                summaryTitle.textContent = "Round Summary";
+                summaryText.textContent = `${correctCount} of 9 correct · ${totalFilled} filled.`;
+            }
+
+            const summaryGrid = document.getElementById('summaryGrid');
+            summaryGrid.innerHTML = '';
+
+            const summaryDetail = document.getElementById('summaryDetail');
+            summaryDetail.innerHTML = '<div class="summary-detail-status">Tap a cell above to see details.</div>';
+
+            // Top-left empty corner
+            const corner = document.createElement('div');
+            corner.className = 'summary-label empty';
+            summaryGrid.appendChild(corner);
+
+            // Column header labels
+            for (let col = 0; col < 3; col++) {
+                const label = document.createElement('div');
+                label.className = 'summary-label';
+                label.textContent = selectedColumnCriteria[col].label;
+                summaryGrid.appendChild(label);
+            }
+
+            for (let row = 0; row < 3; row++) {
+                // Row label
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'summary-label';
+                rowLabel.textContent = selectedRowCriteria[row].label;
+                summaryGrid.appendChild(rowLabel);
+
+                for (let col = 0; col < 3; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'summary-cell';
+
+                    if (gameState[row][col]) {
+                        const entry = gameState[row][col];
+                        if (entry.correct) {
+                            cell.classList.add('correct');
+                        } else {
+                            cell.classList.add('wrong');
+                        }
+                        cell.textContent = entry.name;
+                    } else {
+                        cell.classList.add('empty');
+                        cell.textContent = '—';
+                    }
+
+                    cell.onclick = () => selectSummaryCell(row, col, cell);
+                    summaryGrid.appendChild(cell);
+                }
+            }
+
+            document.getElementById('summaryModal').classList.add('active');
+        }
+
+        function selectSummaryCell(row, col, cellEl) {
+            document.querySelectorAll('.summary-cell.selected').forEach(c => c.classList.remove('selected'));
+            cellEl.classList.add('selected');
+
+            const rowCriteria = selectedRowCriteria[row];
+            const colCriteria = selectedColumnCriteria[col];
+            const criteriaText = `${rowCriteria.label} + ${colCriteria.label}`;
+            const detail = document.getElementById('summaryDetail');
+
+            if (gameState[row][col]) {
+                const entry = gameState[row][col];
+                const player = guardiansPlayers.find(p => p.name === entry.name);
+
+                if (entry.correct) {
+                    detail.innerHTML = `
+                        <div class="summary-detail-criteria">${criteriaText}</div>
+                        <div class="summary-detail-name">✓ ${entry.name}</div>
+                        <div class="summary-detail-status">Correct! This player matches both criteria.</div>
+                    `;
+                } else {
+                    const rowMet = player && rowCriteria.check(player);
+                    const colMet = player && colCriteria.check(player);
+                    const failed = [];
+                    const met = [];
+                    if (rowMet) met.push(rowCriteria.label);
+                    else failed.push(rowCriteria.label);
+                    if (colMet) met.push(colCriteria.label);
+                    else failed.push(colCriteria.label);
+
+                    let status = '';
+                    if (met.length) status += `<strong>Met:</strong> ${met.join(', ')}<br>`;
+                    if (failed.length) status += `<strong>Failed:</strong> ${failed.join(', ')}`;
+
+                    detail.innerHTML = `
+                        <div class="summary-detail-criteria">${criteriaText}</div>
+                        <div class="summary-detail-name">✗ ${entry.name}</div>
+                        <div class="summary-detail-status">${status}</div>
+                        <div class="summary-detail-valid-title">Players who would have matched:</div>
+                        <div class="summary-detail-valid">${getValidPlayerNames(row, col)}</div>
+                    `;
+                }
+            } else {
+                detail.innerHTML = `
+                    <div class="summary-detail-criteria">${criteriaText}</div>
+                    <div class="summary-detail-name">— Empty —</div>
+                    <div class="summary-detail-valid-title">Players who would have matched:</div>
+                    <div class="summary-detail-valid">${getValidPlayerNames(row, col)}</div>
+                `;
+            }
+        }
+
+        function newGame() {
+            gameState = [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ];
+            document.getElementById('completionMessage').classList.remove('show');
+            document.getElementById('summaryModal').classList.remove('active');
+            selectRandomCriteria();
+            renderGrid();
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>
