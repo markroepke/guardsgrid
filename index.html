@@ -436,7 +436,7 @@
 
         .grid-wrapper {
             display: grid;
-            grid-template-columns: 96px repeat(3, 1fr);
+            grid-template-columns: 96px repeat(3, minmax(0, 1fr));
             gap: 6px;
             margin-bottom: 0;
             padding: 8px;
@@ -615,6 +615,10 @@
             text-transform: uppercase;
             letter-spacing: 0.04em;
             padding: 0 4px;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            hyphens: auto;
+            max-width: 100%;
         }
 
         .grid-cell.filled .grid-cell-player {
@@ -910,7 +914,7 @@
         /* ========== SUMMARY ========== */
         .summary-grid {
             display: grid;
-            grid-template-columns: 76px repeat(3, 1fr);
+            grid-template-columns: 76px repeat(3, minmax(0, 1fr));
             gap: 4px;
             margin: 14px 0 12px;
             padding: 6px;
@@ -1191,7 +1195,7 @@
             }
 
             .grid-wrapper {
-                grid-template-columns: 72px repeat(3, 1fr);
+                grid-template-columns: 72px repeat(3, minmax(0, 1fr));
                 gap: 4px;
                 padding: 6px;
             }
@@ -1253,7 +1257,7 @@
             }
 
             .summary-grid {
-                grid-template-columns: 56px repeat(3, 1fr);
+                grid-template-columns: 56px repeat(3, minmax(0, 1fr));
                 gap: 3px;
                 padding: 4px;
             }
@@ -1304,7 +1308,7 @@
             }
 
             .grid-wrapper {
-                grid-template-columns: 60px repeat(3, 1fr);
+                grid-template-columns: 60px repeat(3, minmax(0, 1fr));
                 gap: 3px;
                 padding: 4px;
             }
@@ -1332,7 +1336,7 @@
             }
 
             .summary-grid {
-                grid-template-columns: 50px repeat(3, 1fr);
+                grid-template-columns: 50px repeat(3, minmax(0, 1fr));
             }
 
             .summary-label {
