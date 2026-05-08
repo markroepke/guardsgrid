@@ -1664,6 +1664,137 @@
             text-transform: uppercase;
         }
 
+        /* ========== PLAYER DETAIL MODAL ========== */
+        .player-detail-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .player-detail-header h2 {
+            margin-bottom: 6px;
+        }
+
+        .player-detail-tagline {
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 12px;
+            font-style: italic;
+            color: var(--cle-red-soft);
+            letter-spacing: 0.04em;
+        }
+
+        .player-meta {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 10px 16px;
+            margin: 18px 0;
+            padding: 14px 16px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-stone-deep);
+            border-left: 3px solid var(--cle-red);
+        }
+
+        .player-meta-label {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            color: var(--cle-cream-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-weight: 500;
+            padding-top: 2px;
+        }
+
+        .player-meta-value {
+            color: var(--cle-cream);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .player-section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cle-cream);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--cle-stone-deep);
+        }
+
+        .player-awards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .player-award {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-stone-deep);
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cle-cream);
+        }
+
+        .player-award.hof {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border-color: var(--cle-navy);
+        }
+
+        .player-award-mark {
+            color: var(--cle-red);
+            font-size: 13px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .player-award.hof .player-award-mark {
+            color: var(--cle-red);
+        }
+
+        .player-stat-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .player-stat-tag {
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            padding: 5px 10px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: 1px solid var(--cle-cream-deep);
+        }
+
+        .player-empty {
+            font-family: 'Inter Tight', sans-serif;
+            font-style: italic;
+            font-size: 12px;
+            color: var(--cle-cream-dim);
+            padding: 4px 0;
+        }
+
+        /* Indicate filled cells are tappable for player info */
+        .grid-cell.filled {
+            cursor: pointer;
+        }
+
+        .grid-cell.filled:hover {
+            filter: brightness(1.05);
+        }
+
         @media (max-width: 380px) {
             .stat-card-num {
                 font-size: 26px;
@@ -2234,6 +2365,42 @@
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                     <button class="btn-primary" id="submitBtn" onclick="submitPlayer()" disabled>Lock In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="playerDetailModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="player-detail-header">
+                    <h2 id="detailName"></h2>
+                    <div class="player-detail-tagline" id="detailTagline"></div>
+                </div>
+
+                <div class="player-meta">
+                    <div class="player-meta-label">Years</div>
+                    <div class="player-meta-value" id="detailYears"></div>
+
+                    <div class="player-meta-label">Position</div>
+                    <div class="player-meta-value" id="detailPositions"></div>
+
+                    <div class="player-meta-label">Bats / Throws</div>
+                    <div class="player-meta-value" id="detailHand"></div>
+                </div>
+
+                <div class="player-awards-section" id="detailAwardsSection">
+                    <div class="player-section-title">Awards & Honors</div>
+                    <div class="player-awards-list" id="detailAwards"></div>
+                </div>
+
+                <div class="player-stats-section" id="detailStatsSection">
+                    <div class="player-section-title">Career Highlights</div>
+                    <div class="player-stat-tags" id="detailStats"></div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="closePlayerDetail()" style="flex: 1;">Close</button>
                 </div>
             </div>
         </div>
@@ -4892,7 +5059,9 @@
                         if (!gameState[row][col].correct) {
                             cell.classList.add('wrong');
                         }
-                        cell.innerHTML = `<div class="grid-cell-player">${gameState[row][col].name}</div>`;
+                        const playerName = gameState[row][col].name;
+                        cell.innerHTML = `<div class="grid-cell-player">${playerName}</div>`;
+                        cell.onclick = () => openPlayerDetail(playerName);
                     } else if (gaveUp) {
                         cell.classList.add('locked');
                     } else {
@@ -5207,6 +5376,142 @@
 
         function closeStats() {
             document.getElementById('statsModal').classList.remove('active');
+        }
+
+        // ===== PLAYER DETAIL MODAL =====
+        const POSITION_FULL_NAMES = {
+            'P': 'Pitcher',
+            'C': 'Catcher',
+            '1B': 'First Base',
+            '2B': 'Second Base',
+            '3B': 'Third Base',
+            'SS': 'Shortstop',
+            'LF': 'Left Field',
+            'CF': 'Center Field',
+            'RF': 'Right Field',
+            'OF': 'Outfield',
+            'IF': 'Infield',
+            'DH': 'Designated Hitter'
+        };
+
+        const STAT_TAG_LABELS = {
+            ba300: '.300+ Career BA',
+            hr200: '200+ Career HR',
+            hr300: '300+ Career HR',
+            hr30Season: '30+ HR Season',
+            hr40Season: '40+ HR Season',
+            rbi100Season: '100+ RBI Season',
+            sb40Season: '40+ Steal Season',
+            sb300Career: '300+ Career SB',
+            hits1500: '1500+ Career Hits',
+            wins200: '200+ Career Wins',
+            wins100: '100+ Career Wins',
+            wins20Season: '20-Win Season',
+            strikeouts1500: '1500+ Career K',
+            strikeouts2000: '2000+ Career K',
+            era3career: 'Sub-3.00 ERA',
+            saves100: '100+ Career Saves',
+            saves200: '200+ Career Saves',
+            noHitter: 'Threw a No-Hitter',
+            allStar3plus: '3× All-Star',
+            worldSeriesChamp: 'World Series Champion'
+        };
+
+        function makeTagline(player) {
+            // Short flavor description based on position + era
+            const decade = Math.floor(player.years[0] / 10) * 10;
+            const decadeLabel = `${decade}s`;
+            const isCurrent = player.years.includes(2025);
+            const eraLabel = isCurrent ? 'current Cleveland Guardian' :
+                player.years.length === 1 ? `${decadeLabel} cup-of-coffee` :
+                `${decadeLabel} Cleveland`;
+
+            const positions = player.positionCodes || [];
+            let role;
+            if (positions.includes('P')) role = 'pitcher';
+            else if (positions.includes('C')) role = 'catcher';
+            else if (positions.some(c => INFIELD_CODES.includes(c))) role = 'infielder';
+            else if (positions.some(c => OUTFIELD_CODES.includes(c))) role = 'outfielder';
+            else role = 'player';
+
+            return `${eraLabel} ${role}`;
+        }
+
+        function openPlayerDetail(playerName) {
+            const player = guardiansPlayers.find(p => p.name === playerName);
+            if (!player) return;
+
+            document.getElementById('detailName').textContent = player.name;
+            document.getElementById('detailTagline').textContent = makeTagline(player);
+
+            // Years
+            const minY = Math.min(...player.years);
+            const maxY = Math.max(...player.years);
+            const seasonCount = player.years.length;
+            const span = minY === maxY ? `${minY}` : `${minY}–${maxY}`;
+            const seasonLabel = seasonCount === 1 ? '1 season' : `${seasonCount} seasons`;
+            document.getElementById('detailYears').textContent = `${span} · ${seasonLabel}`;
+
+            // Positions
+            const positions = (player.positionCodes || [])
+                .map(c => POSITION_FULL_NAMES[c] || c);
+            document.getElementById('detailPositions').textContent = positions.join(' · ') || '—';
+
+            // Hand (we only know one hand label currently — this is "left-handed" if flagged)
+            document.getElementById('detailHand').textContent =
+                player.hand === 'L' ? 'Left-handed' : 'Right-handed';
+
+            // Awards
+            const awardsEl = document.getElementById('detailAwards');
+            const awardsSection = document.getElementById('detailAwardsSection');
+            awardsEl.innerHTML = '';
+            if (player.awards.length === 0) {
+                awardsEl.innerHTML = '<div class="player-empty">No major awards on record.</div>';
+            } else {
+                // Sort: HOF first, then MVP, Cy Young, etc.
+                const order = ['Hall of Fame', 'MVP', 'Cy Young', 'Rookie of the Year', 'All-Star', 'Gold Glove', 'Silver Slugger'];
+                const sorted = [...player.awards].sort((a, b) => {
+                    const ai = order.indexOf(a);
+                    const bi = order.indexOf(b);
+                    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+                });
+                sorted.forEach(a => {
+                    const div = document.createElement('div');
+                    div.className = 'player-award';
+                    if (a === 'Hall of Fame') div.classList.add('hof');
+                    div.innerHTML = `<span class="player-award-mark">${a === 'Hall of Fame' ? '★' : '✦'}</span><span>${a}</span>`;
+                    awardsEl.appendChild(div);
+                });
+            }
+            awardsSection.style.display = '';
+
+            // Stat tags
+            const statsEl = document.getElementById('detailStats');
+            const statsSection = document.getElementById('detailStatsSection');
+            statsEl.innerHTML = '';
+            const matchedTags = [];
+            for (const tag in statTags) {
+                if (statTags[tag].includes(player.name)) {
+                    matchedTags.push(tag);
+                }
+            }
+            if (matchedTags.length === 0) {
+                statsSection.style.display = 'none';
+            } else {
+                statsSection.style.display = '';
+                matchedTags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'player-stat-tag';
+                    span.textContent = STAT_TAG_LABELS[tag] || tag;
+                    statsEl.appendChild(span);
+                });
+            }
+
+            document.getElementById('playerDetailModal').classList.add('active');
+        }
+
+        function closePlayerDetail() {
+            document.getElementById('playerDetailModal').classList.remove('active');
         }
 
         function calculateStats() {
