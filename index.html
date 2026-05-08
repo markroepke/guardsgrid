@@ -1349,6 +1349,26 @@
             font-size: 10px;
         }
 
+        /* "Next puzzle in 12:34:56" countdown */
+        .next-puzzle {
+            margin-top: 12px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            color: var(--cle-cream-dim);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .next-puzzle #countdown {
+            color: var(--cle-cream);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.06em;
+            font-variant-numeric: tabular-nums;
+            margin-left: 6px;
+        }
+
         /* ========== TABLET / SMALLER LAPTOP ========== */
         @media (max-width: 600px) {
             body {
@@ -1607,9 +1627,9 @@
                 <h1>GUARDS<span class="stack-break">&shy;</span>GRID</h1>
                 <h2>A Lineup Game</h2>
                 <div class="header-meta">
-                    <span>Vol. I</span>
+                    <span id="dailyNumber">Daily #1</span>
                     <span class="pip"></span>
-                    <span>Cleveland · Ohio</span>
+                    <span id="dailyDate">—</span>
                 </div>
             </header>
 
@@ -1679,7 +1699,7 @@
             <div class="modal-inner">
                 <h2>How to Play</h2>
                 <div class="htp-section">
-                    <p>Field a <strong>3 × 3</strong> lineup of Cleveland Guardians/Indians legends from any era. Every player who has ever taken a single game's worth of plate appearances or batters faced is eligible.</p>
+                    <p>Field a <strong>3 × 3</strong> lineup of Cleveland Guardians/Indians legends. Every player in the franchise's history (1901–present) is eligible. <strong>Same puzzle for everyone, every day</strong> — a new one drops at midnight.</p>
                 </div>
 
                 <div class="htp-section">
@@ -1723,8 +1743,9 @@
                     <div class="summary-detail-status">Tap a cell above to see details.</div>
                 </div>
                 <div class="modal-buttons">
-                    <button class="btn-primary" onclick="newGame()" style="flex: 1;">New Game</button>
+                    <button class="btn-primary" id="nextGameBtn" onclick="closeSummary()" style="flex: 1;">Close</button>
                 </div>
+                <div class="next-puzzle" id="nextPuzzle">Next puzzle in <span id="countdown">—</span></div>
             </div>
         </div>
     </div>
@@ -3928,18 +3949,63 @@
             });
         }
 
-        function selectRandomCriteria() {
-            const shuffled = (arr) => {
-                const copy = [...arr];
-                for (let i = copy.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [copy[i], copy[j]] = [copy[j], copy[i]];
-                }
-                return copy;
-            };
+        // ===== DAILY PUZZLE =====
+        // Launch date: same puzzle for everyone on a given day, in their local timezone.
+        const DAILY_LAUNCH = new Date(2026, 4, 9); // 2026-05-09 = Daily #1
+        const STORAGE_KEY = 'guardsgrid-daily-v1';
 
-            // Try multiple times to get a valid combination where all 9 cells have at least one player
-            for (let attempt = 0; attempt < 100; attempt++) {
+        function getTodayDateString() {
+            const d = new Date();
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+        }
+
+        function getDailyNumber() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const launch = new Date(DAILY_LAUNCH);
+            launch.setHours(0, 0, 0, 0);
+            const days = Math.floor((today - launch) / (1000 * 60 * 60 * 24));
+            return Math.max(1, days + 1);
+        }
+
+        function getDailySeed() {
+            // Hash today's local-date string into a 32-bit seed
+            const s = getTodayDateString();
+            let h = 2166136261 >>> 0;
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return h >>> 0;
+        }
+
+        // Mulberry32 — seeded PRNG
+        function makeRng(seed) {
+            let s = seed >>> 0;
+            return function() {
+                s = (s + 0x6D2B79F5) | 0;
+                let t = Math.imul(s ^ (s >>> 15), 1 | s);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function selectDailyCriteria() {
+            const baseSeed = getDailySeed();
+
+            for (let attempt = 0; attempt < 200; attempt++) {
+                const rng = makeRng(baseSeed + attempt * 2654435761);
+                const shuffled = (arr) => {
+                    const copy = [...arr];
+                    for (let i = copy.length - 1; i > 0; i--) {
+                        const j = Math.floor(rng() * (i + 1));
+                        [copy[i], copy[j]] = [copy[j], copy[i]];
+                    }
+                    return copy;
+                };
+
                 const rows = shuffled(allRowCriteria).slice(0, 3);
                 const cols = shuffled(allColumnCriteria).slice(0, 3);
 
@@ -3964,14 +4030,69 @@
                 }
             }
 
-            // Fallback if no valid combination found
-            selectedRowCriteria = shuffled(allRowCriteria).slice(0, 3);
-            selectedColumnCriteria = shuffled(allColumnCriteria).slice(0, 3);
+            // Fallback (shouldn't happen with the size of our criteria pool)
+            const rng = makeRng(baseSeed);
+            const shuffle = (arr) => {
+                const copy = [...arr];
+                for (let i = copy.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng() * (i + 1));
+                    [copy[i], copy[j]] = [copy[j], copy[i]];
+                }
+                return copy;
+            };
+            selectedRowCriteria = shuffle(allRowCriteria).slice(0, 3);
+            selectedColumnCriteria = shuffle(allColumnCriteria).slice(0, 3);
+        }
+
+        function saveDailyState() {
+            try {
+                const state = {
+                    date: getTodayDateString(),
+                    cells: gameState.map(row => row.map(c => c ? { n: c.name, c: c.correct } : null)),
+                    finished: gameState.flat().every(p => p !== null)
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {
+                /* localStorage may be unavailable in private mode */
+            }
+        }
+
+        function loadDailyState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                const state = JSON.parse(raw);
+                if (state.date !== getTodayDateString()) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    return false;
+                }
+                if (Array.isArray(state.cells)) {
+                    gameState = state.cells.map(row => row.map(c => c ? { name: c.n, correct: c.c } : null));
+                }
+                return state.finished === true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function updateDailyHeader() {
+            const num = getDailyNumber();
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const d = new Date();
+            const dateLabel = months[d.getMonth()] + ' ' + d.getDate();
+            document.getElementById('dailyNumber').textContent = 'Daily #' + num;
+            document.getElementById('dailyDate').textContent = dateLabel;
         }
 
         function initializeGame() {
-            selectRandomCriteria();
+            updateDailyHeader();
+            selectDailyCriteria();
+            const wasFinished = loadDailyState();
             renderGrid();
+            if (wasFinished) {
+                // Show summary on load if user already finished today's puzzle
+                setTimeout(showSummary, 350);
+            }
         }
 
         function renderGrid() {
@@ -4218,6 +4339,7 @@
             const isCorrect = validPlayers.some(p => p.name === player.name);
 
             gameState[row][col] = { name: player.name, correct: isCorrect };
+            saveDailyState();
             closeModal();
             renderGrid();
 
@@ -4238,7 +4360,22 @@
         }
 
         function giveUp() {
+            // Mark all empty cells as filled with null markers? No — keep gameState as is
+            // but treat the round as finished by saving state.
+            saveDailyState();
             showSummary();
+        }
+
+        // Time until midnight (local) for the "come back tomorrow" countdown
+        function getTimeToTomorrow() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setHours(24, 0, 0, 0);
+            const diff = tomorrow - now;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
         }
 
         function openHowToPlay() {
@@ -4327,6 +4464,7 @@
             }
 
             document.getElementById('summaryModal').classList.add('active');
+            startCountdown();
         }
 
         function selectSummaryCell(row, col, cellEl) {
@@ -4380,16 +4518,19 @@
             }
         }
 
-        function newGame() {
-            gameState = [
-                [null, null, null],
-                [null, null, null],
-                [null, null, null]
-            ];
-            document.getElementById('completionMessage').classList.remove('show');
+        function closeSummary() {
             document.getElementById('summaryModal').classList.remove('active');
-            selectRandomCriteria();
-            renderGrid();
+        }
+
+        // Live countdown to next daily puzzle
+        let countdownInterval = null;
+        function startCountdown() {
+            const el = document.getElementById('countdown');
+            if (!el) return;
+            const tick = () => { el.textContent = getTimeToTomorrow(); };
+            tick();
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(tick, 1000);
         }
 
         initializeGame();
