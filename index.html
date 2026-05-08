@@ -579,6 +579,8 @@
             border: 1px solid var(--cle-cream-deep);
             outline: 1px solid var(--cle-navy-deep);
             outline-offset: 3px;
+            /* enables 3D depth for the cell flip animation */
+            perspective: 900px;
         }
 
         .grid-label-cell {
@@ -882,6 +884,107 @@
             word-break: break-word;
             hyphens: auto;
             max-width: 100%;
+        }
+
+        /* ===== Cell flip animation ===== */
+        /* The cell starts looking empty (navy), rotates 90° on Y axis to
+           edge-on (invisible), then snaps to filled colors and flips back
+           to face-on. Net effect: a satisfying reveal. */
+        @keyframes flipCorrect {
+            0% {
+                transform: rotateY(0deg);
+                background: var(--cle-navy-deep);
+                color: var(--cle-cream);
+                border-color: var(--cle-stone-deep);
+            }
+            49% {
+                transform: rotateY(89deg);
+                background: var(--cle-navy-deep);
+                color: var(--cle-cream);
+                border-color: var(--cle-stone-deep);
+            }
+            50% {
+                transform: rotateY(-89deg);
+                background: var(--cle-cream);
+                border-color: var(--cle-navy);
+                color: var(--cle-navy);
+            }
+            100% {
+                transform: rotateY(0deg);
+                background: var(--cle-cream);
+                border-color: var(--cle-navy);
+                color: var(--cle-navy);
+            }
+        }
+
+        @keyframes flipWrong {
+            0% {
+                transform: rotateY(0deg);
+                background: var(--cle-navy-deep);
+                color: var(--cle-cream);
+                border-color: var(--cle-stone-deep);
+            }
+            49% {
+                transform: rotateY(89deg);
+                background: var(--cle-navy-deep);
+                color: var(--cle-cream);
+                border-color: var(--cle-stone-deep);
+            }
+            50% {
+                transform: rotateY(-89deg);
+                background: var(--cle-red);
+                border-color: var(--cle-red-deep);
+                color: var(--cle-cream);
+            }
+            100% {
+                transform: rotateY(0deg);
+                background: var(--cle-red);
+                border-color: var(--cle-red-deep);
+                color: var(--cle-cream);
+            }
+        }
+
+        .grid-cell.flip-correct {
+            animation: flipCorrect 0.55s cubic-bezier(0.42, 0, 0.4, 1);
+            transform-style: preserve-3d;
+        }
+
+        .grid-cell.flip-wrong {
+            animation: flipWrong 0.55s cubic-bezier(0.42, 0, 0.4, 1);
+            transform-style: preserve-3d;
+        }
+
+        /* Hide corner brackets during the flip so they don't appear on the
+           wrong "side" of the card mid-rotation. */
+        .grid-cell.flip-correct::before,
+        .grid-cell.flip-correct::after,
+        .grid-cell.flip-wrong::before,
+        .grid-cell.flip-wrong::after {
+            opacity: 0;
+        }
+
+        /* The player-name text shouldn't be visible during the rotation
+           or the user sees it mirrored mid-flip. */
+        .grid-cell.flip-correct .grid-cell-player,
+        .grid-cell.flip-wrong .grid-cell-player {
+            animation: textReveal 0.55s ease-in;
+        }
+
+        @keyframes textReveal {
+            0%, 50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* Respect users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .grid-cell.flip-correct,
+            .grid-cell.flip-wrong {
+                animation: none;
+            }
+            .grid-cell.flip-correct .grid-cell-player,
+            .grid-cell.flip-wrong .grid-cell-player {
+                animation: none;
+            }
         }
 
         /* Locked cell when user has given up */
@@ -4986,8 +5089,20 @@
             renderGrid();
             updateGiveUpButton();
 
+            // Trigger flip animation on the just-rendered cell
+            const flippedCell = document.querySelector(
+                `.grid-cell[data-row="${row}"][data-col="${col}"]`
+            );
+            if (flippedCell) {
+                flippedCell.classList.add(isCorrect ? 'flip-correct' : 'flip-wrong');
+                flippedCell.addEventListener('animationend', () => {
+                    flippedCell.classList.remove('flip-correct', 'flip-wrong');
+                }, { once: true });
+            }
+
             if (gameState.flat().every(p => p !== null)) {
-                showSummary();
+                // Wait for the flip to finish before opening the summary
+                setTimeout(showSummary, 600);
             }
         }
 
