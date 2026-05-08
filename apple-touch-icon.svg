@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Navy background with art-deco rounded corners -->
+  <rect width="180" height="180" rx="32" fill="#0C2340"/>
+
+  <!-- Subtle inner border like the modal/container outlines -->
+  <rect x="14" y="14" width="152" height="152" rx="22" fill="none" stroke="#F4ECD8" stroke-opacity="0.18" stroke-width="1"/>
+
+  <!-- 3x3 grid -->
+  <g>
+    <!-- Row 1 -->
+    <rect x="32" y="32" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="74" y="32" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="116" y="32" width="32" height="32" fill="#C8102E"/>
+    <!-- Row 2 -->
+    <rect x="32" y="74" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="74" y="74" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="116" y="74" width="32" height="32" fill="#F4ECD8"/>
+    <!-- Row 3 -->
+    <rect x="32" y="116" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="74" y="116" width="32" height="32" fill="#F4ECD8"/>
+    <rect x="116" y="116" width="32" height="32" fill="#F4ECD8"/>
+  </g>
+
+  <!-- Tiny red pinstripes on left/right edges (jersey piping) -->
+  <rect x="0" y="0" width="3" height="180" fill="#C8102E"/>
+  <rect x="177" y="0" width="3" height="180" fill="#C8102E"/>
+</svg>
