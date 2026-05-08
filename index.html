@@ -749,9 +749,17 @@
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             z-index: 1000;
-            padding: 20px;
+            padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (min-height: 700px) and (min-width: 601px) {
+            .modal {
+                align-items: center;
+            }
         }
 
         .modal.active {
@@ -772,10 +780,9 @@
             padding: 0;
             max-width: 440px;
             width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
             box-shadow: var(--shadow-deep);
             position: relative;
+            margin: auto 0;
         }
 
         .modal-content::before {
@@ -2379,13 +2386,47 @@
             document.getElementById('suggestions').innerHTML = '';
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('modal').classList.add('active');
-            document.getElementById('playerInput').focus();
+            // Slight delay so the modal is visible before focus pulls up the keyboard
+            setTimeout(() => {
+                document.getElementById('playerInput').focus();
+            }, 50);
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('active');
+            document.getElementById('playerInput').blur();
             currentCell = null;
         }
+
+        // Keep modals sized to the visible viewport so the on-screen
+        // keyboard never covers content. Falls back to layout viewport
+        // when VisualViewport API is unavailable.
+        (function setupKeyboardAwareModals() {
+            if (!window.visualViewport) return;
+            const vv = window.visualViewport;
+
+            function syncModals() {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.classList.contains('active')) {
+                        modal.style.height = vv.height + 'px';
+                        modal.style.top = vv.offsetTop + 'px';
+                    } else {
+                        modal.style.height = '';
+                        modal.style.top = '';
+                    }
+                });
+            }
+
+            vv.addEventListener('resize', syncModals);
+            vv.addEventListener('scroll', syncModals);
+
+            // Sync whenever a modal opens/closes (observe class changes)
+            const obs = new MutationObserver(syncModals);
+            document.querySelectorAll('.modal').forEach(m => {
+                obs.observe(m, { attributes: true, attributeFilter: ['class'] });
+            });
+        })();
 
         document.getElementById('playerInput').addEventListener('input', (e) => {
             const value = e.target.value.trim();
