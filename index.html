@@ -470,6 +470,41 @@
             border: 1px solid var(--cle-navy);
             color: var(--cle-navy);
             position: relative;
+            cursor: help;
+            transition: background 0.15s;
+        }
+
+        .grid-label-cell.col-label:hover,
+        .grid-label-cell.row-label:hover,
+        .grid-label-cell.col-label:focus-visible,
+        .grid-label-cell.row-label:focus-visible {
+            background: var(--cle-cream-soft);
+        }
+
+        /* Info dot indicator next to label */
+        .grid-label-cell.col-label::before,
+        .grid-label-cell.row-label::before {
+            content: 'i';
+            position: absolute;
+            top: 4px;
+            right: 5px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--cle-navy);
+            color: var(--cle-cream);
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            font-weight: 700;
+            line-height: 11px;
+            text-align: center;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+        }
+
+        .grid-label-cell.col-label:hover::before,
+        .grid-label-cell.row-label:hover::before {
+            opacity: 1;
         }
 
         .grid-label-cell.empty {
@@ -508,13 +543,76 @@
         }
 
         .label-desc {
+            display: none;
+        }
+
+        /* Popover that appears when a label is tapped */
+        .label-popover {
+            position: fixed;
+            background: var(--cle-cream);
+            color: var(--cle-navy);
+            border: 1px solid var(--cle-navy);
+            outline: 1px solid var(--cle-cream-deep);
+            outline-offset: 3px;
+            padding: 14px 16px;
+            max-width: 260px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+            z-index: 900;
+            opacity: 0;
+            transform: translateY(4px);
+            pointer-events: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+
+        .label-popover.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .label-popover-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cle-navy);
+            margin-bottom: 6px;
+        }
+
+        .label-popover-desc {
             font-family: 'Inter Tight', sans-serif;
             font-weight: 500;
-            font-size: 9px;
-            line-height: 1.3;
+            font-size: 13px;
+            line-height: 1.5;
             color: var(--cle-red);
-            letter-spacing: 0.01em;
-            font-style: italic;
+        }
+
+        .label-popover::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--cle-cream);
+            border-right: 1px solid var(--cle-navy);
+            border-bottom: 1px solid var(--cle-navy);
+            transform: rotate(45deg);
+        }
+
+        .label-popover.arrow-up::after {
+            top: -6px;
+            left: 50%;
+            margin-left: -5px;
+            border-right: none;
+            border-bottom: none;
+            border-left: 1px solid var(--cle-navy);
+            border-top: 1px solid var(--cle-navy);
+        }
+
+        .label-popover.arrow-down::after {
+            bottom: -6px;
+            left: 50%;
+            margin-left: -5px;
         }
 
         .grid-cell {
@@ -1385,7 +1483,7 @@
             </header>
 
             <div class="instructions">
-                Field a <strong>3 × 3</strong> lineup of <strong>Cleveland</strong> legends from any era. Each cell needs a player who clears <strong>both</strong> the row and column criteria. No repeat names. Tap a red or empty cell in the summary to see who would've worked.
+                Field a <strong>3 × 3</strong> lineup of <strong>Cleveland</strong> legends from any era. Each cell needs a player who clears <strong>both</strong> the row and column criteria. No repeat names. Tap any <strong>label</strong> for its full description, or tap a red or empty cell in the summary to see who would've worked.
             </div>
 
             <div class="stats">
@@ -1413,6 +1511,11 @@
             <div class="footer-mark"><span class="laurel">❦</span> Built on the lakefront <span class="laurel">❦</span></div>
         </div>
         <div class="deco-strip bottom"></div>
+    </div>
+
+    <div class="label-popover" id="labelPopover" role="tooltip" aria-hidden="true">
+        <div class="label-popover-title" id="labelPopoverTitle"></div>
+        <div class="label-popover-desc" id="labelPopoverDesc"></div>
     </div>
 
     <div class="modal" id="modal">
@@ -2180,9 +2283,92 @@
         function createLabelCell(className, criteria) {
             const div = document.createElement('div');
             div.className = className;
+            div.setAttribute('role', 'button');
+            div.setAttribute('tabindex', '0');
+            div.setAttribute('aria-label', `${criteria.label}: ${criteria.desc}`);
             div.innerHTML = `<div class="label-title">${criteria.label}</div><div class="label-desc">${criteria.desc}</div>`;
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLabelPopover(criteria, div);
+            });
+            div.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    showLabelPopover(criteria, div);
+                }
+            });
             return div;
         }
+
+        function showLabelPopover(criteria, anchorEl) {
+            const pop = document.getElementById('labelPopover');
+            const titleEl = document.getElementById('labelPopoverTitle');
+            const descEl = document.getElementById('labelPopoverDesc');
+
+            // If already open for this criteria, toggle off
+            if (pop.classList.contains('active') && pop.dataset.label === criteria.label) {
+                hideLabelPopover();
+                return;
+            }
+
+            titleEl.textContent = criteria.label;
+            descEl.textContent = criteria.desc;
+            pop.dataset.label = criteria.label;
+
+            // Position relative to anchor
+            const rect = anchorEl.getBoundingClientRect();
+            const margin = 12;
+
+            // Make visible briefly to measure
+            pop.classList.remove('arrow-up', 'arrow-down');
+            pop.style.visibility = 'hidden';
+            pop.classList.add('active');
+            const popRect = pop.getBoundingClientRect();
+            pop.style.visibility = '';
+
+            // Decide above or below
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const placeBelow = spaceBelow > popRect.height + margin || rect.top < popRect.height + margin;
+
+            let top, left;
+            if (placeBelow) {
+                top = rect.bottom + margin;
+                pop.classList.add('arrow-up');
+            } else {
+                top = rect.top - popRect.height - margin;
+                pop.classList.add('arrow-down');
+            }
+
+            // Center horizontally over anchor, but keep within viewport
+            const desiredLeft = rect.left + rect.width / 2 - popRect.width / 2;
+            const minLeft = 8;
+            const maxLeft = window.innerWidth - popRect.width - 8;
+            left = Math.max(minLeft, Math.min(desiredLeft, maxLeft));
+
+            pop.style.top = top + 'px';
+            pop.style.left = left + 'px';
+            pop.setAttribute('aria-hidden', 'false');
+        }
+
+        function hideLabelPopover() {
+            const pop = document.getElementById('labelPopover');
+            pop.classList.remove('active');
+            pop.setAttribute('aria-hidden', 'true');
+            delete pop.dataset.label;
+        }
+
+        // Dismiss popover on outside click, scroll, or escape
+        document.addEventListener('click', (e) => {
+            const pop = document.getElementById('labelPopover');
+            if (pop.classList.contains('active') && !pop.contains(e.target)) {
+                hideLabelPopover();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideLabelPopover();
+        });
+        window.addEventListener('scroll', hideLabelPopover, { passive: true });
+        window.addEventListener('resize', hideLabelPopover);
 
         function openModal(row, col) {
             currentCell = { row, col };
