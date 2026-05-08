@@ -5594,6 +5594,16 @@
         }
 
         initializeGame();
+
+        // Register the service worker for offline play.
+        // Skipped on file:// since service workers require http(s).
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+                    console.warn('Service worker registration failed:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
