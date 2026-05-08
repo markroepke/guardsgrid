@@ -1406,6 +1406,143 @@
             text-transform: uppercase;
         }
 
+        /* ========== STATS MODAL ========== */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 14px 0 18px;
+        }
+
+        .stat-card {
+            background: var(--cle-navy-deep);
+            border: 1px solid var(--cle-stone-deep);
+            padding: 14px 6px 10px;
+            text-align: center;
+        }
+
+        .stat-card-num {
+            font-family: 'Big Shoulders Inline Display', 'Big Shoulders Display', sans-serif;
+            font-weight: 900;
+            font-size: 30px;
+            color: var(--cle-cream);
+            line-height: 1;
+            letter-spacing: 0;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 1px 0 var(--cle-navy-deep);
+        }
+
+        .stat-card-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            color: var(--cle-cream-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-top: 8px;
+        }
+
+        .stats-section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cle-cream);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin: 18px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--cle-stone-deep);
+        }
+
+        .stats-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stats-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stats-bar-label {
+            color: var(--cle-cream-dim);
+            width: 32px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .stats-bar-track {
+            flex: 1;
+            background: var(--cle-stone-deep);
+            height: 18px;
+            position: relative;
+            min-width: 24px;
+        }
+
+        .stats-bar-fill {
+            background: var(--cle-cream);
+            height: 100%;
+            min-width: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .stats-bar-fill.perfect {
+            background: var(--cle-red);
+        }
+
+        .stats-bar-count {
+            color: var(--cle-cream);
+            font-weight: 700;
+            min-width: 20px;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .stats-summary {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--cle-stone-deep);
+            font-family: 'Inter Tight', sans-serif;
+            font-size: 12px;
+            color: var(--cle-cream-soft);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .stats-summary strong {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: var(--cle-cream);
+            letter-spacing: 0.06em;
+        }
+
+        .stats-empty {
+            padding: 30px 16px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            color: var(--cle-cream-dim);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 380px) {
+            .stat-card-num {
+                font-size: 26px;
+            }
+            .stat-card {
+                padding: 12px 4px 8px;
+            }
+            .stat-card-label {
+                font-size: 7px;
+                letter-spacing: 0.12em;
+            }
+        }
+
         /* ========== SUMMARY ========== */
         .summary-grid {
             display: grid;
@@ -1927,6 +2064,11 @@
                 <span class="htp-label">Play Previous Grids</span>
             </button>
 
+            <button class="archive-button" onclick="openStats()">
+                <span class="htp-icon" style="background: var(--cle-red); color: var(--cle-cream);">▦</span>
+                <span class="htp-label">My Stats</span>
+            </button>
+
             <div class="footer-mark"><span class="laurel">❦</span> Built on the lakefront <span class="laurel">❦</span></div>
         </div>
         <div class="deco-strip bottom"></div>
@@ -1956,6 +2098,42 @@
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="closeModal()">Cancel</button>
                     <button class="btn-primary" id="submitBtn" onclick="submitPlayer()" disabled>Lock In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <h2>My Stats</h2>
+                <p>Your record across every Guardian-Grid you've played.</p>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-num" id="statPlayed">0</div>
+                        <div class="stat-card-label">Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-num" id="statPerfect">0</div>
+                        <div class="stat-card-label">Perfect ★</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-num" id="statStreak">0</div>
+                        <div class="stat-card-label">Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-num" id="statBest">0</div>
+                        <div class="stat-card-label">Best</div>
+                    </div>
+                </div>
+
+                <div class="stats-section-title">Score Distribution</div>
+                <div class="stats-distribution" id="statsDistribution"></div>
+
+                <div class="stats-summary" id="statsSummary"></div>
+
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="closeStats()" style="flex: 1;">Close</button>
                 </div>
             </div>
         </div>
@@ -4833,6 +5011,140 @@
 
         function closeArchive() {
             document.getElementById('archiveModal').classList.remove('active');
+        }
+
+        function openStats() {
+            renderStats();
+            document.getElementById('statsModal').classList.add('active');
+        }
+
+        function closeStats() {
+            document.getElementById('statsModal').classList.remove('active');
+        }
+
+        function calculateStats() {
+            const all = loadAllStates();
+            const dates = Object.keys(all).sort();
+
+            let played = 0;
+            let completed = 0;
+            let perfect = 0;
+            let forfeited = 0;
+            let totalCorrect = 0;
+            const distribution = [0,0,0,0,0,0,0,0,0,0]; // index = correct count 0..9
+
+            dates.forEach(date => {
+                const state = all[date];
+                if (!state || !Array.isArray(state.cells)) return;
+                const cells = state.cells.flat();
+                const filled = cells.filter(c => c !== null);
+                if (filled.length === 0 && !state.gaveUp) return;
+
+                played++;
+                const correct = filled.filter(c => c && c.c).length;
+
+                if (state.finished) {
+                    completed++;
+                    distribution[correct]++;
+                    totalCorrect += correct;
+                    if (correct === 9) perfect++;
+                    if (state.gaveUp && filled.length < 9) forfeited++;
+                }
+            });
+
+            // Build set of finished dates for streak calculation
+            const completedDates = new Set(
+                dates.filter(d => all[d] && all[d].finished === true)
+            );
+
+            // Current streak: consecutive completed days ending today (or yesterday if not yet played)
+            let currentStreak = 0;
+            const today = getTodayDateString();
+            const cursor = parseDateString(today);
+            // Allow today's puzzle to not yet be completed without breaking the streak
+            if (!completedDates.has(today)) {
+                cursor.setDate(cursor.getDate() - 1);
+            }
+            while (true) {
+                const ds = cursor.getFullYear() + '-' +
+                    String(cursor.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(cursor.getDate()).padStart(2, '0');
+                if (completedDates.has(ds)) {
+                    currentStreak++;
+                    cursor.setDate(cursor.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            // Best streak: walk all completed dates chronologically
+            let bestStreak = 0;
+            let runStreak = 0;
+            let prev = null;
+            const sortedCompleted = [...completedDates].sort();
+            sortedCompleted.forEach(ds => {
+                if (prev) {
+                    const diff = (parseDateString(ds) - parseDateString(prev)) / 86400000;
+                    if (diff === 1) {
+                        runStreak++;
+                    } else {
+                        runStreak = 1;
+                    }
+                } else {
+                    runStreak = 1;
+                }
+                if (runStreak > bestStreak) bestStreak = runStreak;
+                prev = ds;
+            });
+
+            return {
+                played, completed, perfect, forfeited,
+                winRate: played > 0 ? Math.round((perfect / played) * 100) : 0,
+                avgCorrect: completed > 0 ? (totalCorrect / completed).toFixed(1) : '0.0',
+                currentStreak, bestStreak,
+                distribution
+            };
+        }
+
+        function renderStats() {
+            const s = calculateStats();
+            document.getElementById('statPlayed').textContent = s.played;
+            document.getElementById('statPerfect').textContent = s.perfect;
+            document.getElementById('statStreak').textContent = s.currentStreak;
+            document.getElementById('statBest').textContent = s.bestStreak;
+
+            const dist = document.getElementById('statsDistribution');
+            dist.innerHTML = '';
+            const summary = document.getElementById('statsSummary');
+
+            if (s.completed === 0) {
+                dist.innerHTML = '<div class="stats-empty">— No completed grids yet —</div>';
+                summary.innerHTML = 'Complete your first daily to start tracking stats.';
+                return;
+            }
+
+            const max = Math.max(...s.distribution, 1);
+            for (let i = 9; i >= 0; i--) {
+                const count = s.distribution[i];
+                const pct = (count / max) * 100;
+                const row = document.createElement('div');
+                row.className = 'stats-bar-row';
+                row.innerHTML = `
+                    <span class="stats-bar-label">${i}/9</span>
+                    <div class="stats-bar-track">
+                        <div class="stats-bar-fill ${i === 9 ? 'perfect' : ''}" style="width: ${count > 0 ? pct + '%' : '0'};"></div>
+                    </div>
+                    <span class="stats-bar-count">${count}</span>
+                `;
+                dist.appendChild(row);
+            }
+
+            const parts = [
+                `<strong>${s.winRate}%</strong> perfect rate`,
+                `<strong>${s.avgCorrect}</strong> avg correct`,
+            ];
+            if (s.forfeited > 0) parts.push(`<strong>${s.forfeited}</strong> forfeited`);
+            summary.innerHTML = parts.join(' · ');
         }
 
         function buildArchiveList() {
