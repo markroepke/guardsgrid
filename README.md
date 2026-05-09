@@ -12,6 +12,16 @@ Open `index.html` in any browser, or visit the deployed page.
 - Roster covers ~400 unique players from 1901–2025.
 - Criteria mix decades, awards, positions, handedness, and curated stat thresholds (200+ HR, 20-win season, no-hitters, etc.).
 
+## Tests
+
+A zero-dependency Node test suite covers data integrity, criteria correctness, daily puzzle determinism + quality, search normalization, share-text format, stats math, and state persistence.
+
+```bash
+node test.js
+# or
+npm test
+```
+
 ## Theme
 
 Visual design takes cues from the Cleveland Guardians City Connect uniforms — navy, cream, and red, with art-deco bridge motifs referencing the Hope Memorial Bridge guardians.

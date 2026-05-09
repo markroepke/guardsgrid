@@ -1,0 +1,9 @@
+{
+  "name": "guardsgrid",
+  "version": "1.0.0",
+  "description": "A daily 3×3 lineup game built around Cleveland Guardians/Indians franchise history.",
+  "private": true,
+  "scripts": {
+    "test": "node test.js"
+  }
+}
