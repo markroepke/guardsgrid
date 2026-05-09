@@ -1,0 +1,26 @@
+name: tests
+
+# Runs the test suite on:
+#   - any pull request targeting dev or main (so reviewers see status before merging)
+#   - any push to dev or main (catches direct commits / post-merge state)
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+jobs:
+  test:
+    name: node test.js
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run test suite
+        run: node test.js
