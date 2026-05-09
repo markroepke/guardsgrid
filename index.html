@@ -2324,6 +2324,11 @@
 
             <button class="giveup-button" onclick="giveUp()">Give Up — End Round</button>
 
+            <button class="archive-button" onclick="startPractice()">
+                <span class="htp-icon" style="background: var(--cle-cream); color: var(--cle-navy);">⚡</span>
+                <span class="htp-label">Practice Round</span>
+            </button>
+
             <button class="archive-button" onclick="openArchive()">
                 <span class="htp-icon" style="background: var(--cle-cream); color: var(--cle-navy);">★</span>
                 <span class="htp-label">Play Previous Grids</span>
@@ -4664,6 +4669,8 @@
         let selectedRowCriteria = [];
         let selectedColumnCriteria = [];
         let gaveUp = false;
+        let practiceMode = false;
+        let practiceRound = 0;
 
         // All possible criteria
         const allRowCriteria = [
@@ -4832,13 +4839,9 @@
             };
         }
 
-        function selectDailyCriteria() {
-            const baseSeed = getDailySeed();
-
-            // Tiered validator: try to find a combo where every cell has at least
-            // 3 valid players. If we can't, relax to 2, then 1. The seed advances
-            // monotonically across tiers so the same date always produces the
-            // same puzzle deterministically.
+        // Tiered validator. rngFor(attempt) must return an RNG function (() => 0..1).
+        // Returns { rows, cols }.
+        function findValidCriteria(rngFor) {
             const TIERS = [
                 { minMatches: 3, attempts: 120 },
                 { minMatches: 2, attempts: 60 },
@@ -4858,7 +4861,7 @@
             for (const tier of TIERS) {
                 for (let i = 0; i < tier.attempts; i++) {
                     totalAttempts++;
-                    const rng = makeRng(baseSeed + totalAttempts * 2654435761);
+                    const rng = rngFor(totalAttempts);
                     const rows = shuffleWithRng(allRowCriteria, rng).slice(0, 3);
                     const cols = shuffleWithRng(allColumnCriteria, rng).slice(0, 3);
 
@@ -4871,20 +4874,30 @@
                         }
                     }
 
-                    if (valid) {
-                        selectedRowCriteria = rows;
-                        selectedColumnCriteria = cols;
-                        return;
-                    }
+                    if (valid) return { rows, cols };
                 }
             }
 
-            // Last-resort fallback — pick any random combo. Should be unreachable
-            // given the depth of the criteria pool, but keeps the game from
-            // exploding if every tier fails.
-            const rng = makeRng(baseSeed);
-            selectedRowCriteria = shuffleWithRng(allRowCriteria, rng).slice(0, 3);
-            selectedColumnCriteria = shuffleWithRng(allColumnCriteria, rng).slice(0, 3);
+            // Last-resort fallback
+            const rng = rngFor(0);
+            return {
+                rows: shuffleWithRng(allRowCriteria, rng).slice(0, 3),
+                cols: shuffleWithRng(allColumnCriteria, rng).slice(0, 3)
+            };
+        }
+
+        function selectDailyCriteria() {
+            const baseSeed = getDailySeed();
+            const { rows, cols } = findValidCriteria((n) => makeRng(baseSeed + n * 2654435761));
+            selectedRowCriteria = rows;
+            selectedColumnCriteria = cols;
+        }
+
+        function selectRandomCriteria() {
+            // Practice mode: use Math.random — fresh each call, never matches a daily
+            const { rows, cols } = findValidCriteria(() => Math.random);
+            selectedRowCriteria = rows;
+            selectedColumnCriteria = cols;
         }
 
         function loadAllStates() {
@@ -4896,6 +4909,7 @@
         }
 
         function saveDailyState() {
+            if (practiceMode) return; // practice rounds don't persist
             try {
                 const all = loadAllStates();
                 const allFilled = gameState.flat().every(p => p !== null);
@@ -4911,6 +4925,7 @@
         }
 
         function loadDailyState() {
+            if (practiceMode) return false;
             try {
                 const all = loadAllStates();
                 const state = all[viewingDate];
@@ -4945,15 +4960,28 @@
         }
 
         function updateDailyHeader() {
+            const banner = document.getElementById('archiveBanner');
+
+            if (practiceMode) {
+                document.getElementById('dailyNumber').textContent = 'Practice';
+                document.getElementById('dailyDate').textContent = 'Round ' + practiceRound;
+                if (banner) {
+                    banner.classList.add('show');
+                    banner.classList.add('practice');
+                    document.getElementById('archiveBannerText').textContent =
+                        'Practice Round · Stats not counted';
+                }
+                return;
+            }
+
             const num = getDailyNumber();
             const dateLabel = formatDateShort(viewingDate);
             const isCurrent = isToday(viewingDate);
             document.getElementById('dailyNumber').textContent = 'Daily #' + num;
             document.getElementById('dailyDate').textContent = dateLabel;
 
-            // Toggle the archive banner
-            const banner = document.getElementById('archiveBanner');
             if (banner) {
+                banner.classList.remove('practice');
                 if (isCurrent) {
                     banner.classList.remove('show');
                 } else {
@@ -4965,6 +4993,7 @@
         }
 
         function initializeGame() {
+            practiceMode = false;
             viewingDate = getViewingDate();
             renderForCurrentDate();
         }
@@ -4972,6 +5001,7 @@
         // Re-render the entire game for the current viewingDate.
         // Called on initial load and whenever the user switches days.
         function renderForCurrentDate(autoShowSummary) {
+            practiceMode = false;
             // Reset in-memory gameState
             gameState = [
                 [null, null, null],
@@ -5023,7 +5053,31 @@
         }
 
         function backToToday() {
+            practiceMode = false;
             switchToDate(getTodayDateString());
+        }
+
+        function startPractice() {
+            // Close any open modals first
+            document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+            practiceMode = true;
+            practiceRound++;
+            // Drop any URL hash so refresh doesn't snap us into archive mode
+            if (window.location.hash) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            // Reset game state without touching saved daily progress
+            gameState = [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ];
+            gaveUp = false;
+            selectRandomCriteria();
+            updateDailyHeader();
+            document.getElementById('completionMessage').classList.remove('show');
+            renderGrid();
+            updateGiveUpButton();
         }
 
         // Listen for browser back/forward through archived dates
@@ -5742,17 +5796,33 @@
             const summaryText = document.getElementById('summaryText');
 
             if (allFilled && correctCount === 9) {
-                summaryTitle.textContent = "Perfect Lineup";
-                summaryText.textContent = "Nine for nine. A flawless Cleveland card.";
+                summaryTitle.textContent = practiceMode ? "Practice Cleared" : "Perfect Lineup";
+                summaryText.textContent = practiceMode
+                    ? "Nine for nine. Care for another?"
+                    : "Nine for nine. A flawless Cleveland card.";
             } else if (allFilled) {
-                summaryTitle.textContent = "Final Box Score";
+                summaryTitle.textContent = practiceMode ? "Practice Box Score" : "Final Box Score";
                 summaryText.textContent = `You hit ${correctCount} of 9. Tap a red cell to scout who would've worked.`;
             } else if (gaveUp) {
-                summaryTitle.textContent = "Round Forfeited";
+                summaryTitle.textContent = practiceMode ? "Practice Forfeited" : "Round Forfeited";
                 summaryText.textContent = `You gave up at ${totalFilled}/9 filled · ${correctCount} correct.`;
             } else {
-                summaryTitle.textContent = "Round Summary";
+                summaryTitle.textContent = practiceMode ? "Practice Summary" : "Round Summary";
                 summaryText.textContent = `${correctCount} of 9 correct · ${totalFilled} filled.`;
+            }
+
+            // Swap the countdown for a "New Practice" button in practice mode
+            const nextPuzzleEl = document.getElementById('nextPuzzle');
+            if (nextPuzzleEl) {
+                nextPuzzleEl.style.display = practiceMode ? 'none' : '';
+            }
+            const summaryButtons = document.querySelector('#summaryModal .modal-buttons');
+            if (summaryButtons) {
+                if (practiceMode) {
+                    summaryButtons.innerHTML = '<button class="btn-secondary" onclick="closeSummary()" style="flex: 1;">Close</button><button class="btn-primary" onclick="startPractice()" style="flex: 1;">New Practice</button>';
+                } else {
+                    summaryButtons.innerHTML = '<button class="btn-secondary" onclick="closeSummary()" style="flex: 1;">Close</button><button class="btn-primary" onclick="shareResults()" style="flex: 1;">Share Score</button>';
+                }
             }
 
             const summaryGrid = document.getElementById('summaryGrid');
