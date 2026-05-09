@@ -4835,44 +4835,17 @@
         function selectDailyCriteria() {
             const baseSeed = getDailySeed();
 
-            for (let attempt = 0; attempt < 200; attempt++) {
-                const rng = makeRng(baseSeed + attempt * 2654435761);
-                const shuffled = (arr) => {
-                    const copy = [...arr];
-                    for (let i = copy.length - 1; i > 0; i--) {
-                        const j = Math.floor(rng() * (i + 1));
-                        [copy[i], copy[j]] = [copy[j], copy[i]];
-                    }
-                    return copy;
-                };
+            // Tiered validator: try to find a combo where every cell has at least
+            // 3 valid players. If we can't, relax to 2, then 1. The seed advances
+            // monotonically across tiers so the same date always produces the
+            // same puzzle deterministically.
+            const TIERS = [
+                { minMatches: 3, attempts: 120 },
+                { minMatches: 2, attempts: 60 },
+                { minMatches: 1, attempts: 40 }
+            ];
 
-                const rows = shuffled(allRowCriteria).slice(0, 3);
-                const cols = shuffled(allColumnCriteria).slice(0, 3);
-
-                let valid = true;
-                for (let r = 0; r < 3; r++) {
-                    for (let c = 0; c < 3; c++) {
-                        const matches = guardiansPlayers.filter(p =>
-                            rows[r].check(p) && cols[c].check(p)
-                        );
-                        if (matches.length === 0) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                    if (!valid) break;
-                }
-
-                if (valid) {
-                    selectedRowCriteria = rows;
-                    selectedColumnCriteria = cols;
-                    return;
-                }
-            }
-
-            // Fallback (shouldn't happen with the size of our criteria pool)
-            const rng = makeRng(baseSeed);
-            const shuffle = (arr) => {
+            const shuffleWithRng = (arr, rng) => {
                 const copy = [...arr];
                 for (let i = copy.length - 1; i > 0; i--) {
                     const j = Math.floor(rng() * (i + 1));
@@ -4880,8 +4853,38 @@
                 }
                 return copy;
             };
-            selectedRowCriteria = shuffle(allRowCriteria).slice(0, 3);
-            selectedColumnCriteria = shuffle(allColumnCriteria).slice(0, 3);
+
+            let totalAttempts = 0;
+            for (const tier of TIERS) {
+                for (let i = 0; i < tier.attempts; i++) {
+                    totalAttempts++;
+                    const rng = makeRng(baseSeed + totalAttempts * 2654435761);
+                    const rows = shuffleWithRng(allRowCriteria, rng).slice(0, 3);
+                    const cols = shuffleWithRng(allColumnCriteria, rng).slice(0, 3);
+
+                    let valid = true;
+                    for (let r = 0; r < 3 && valid; r++) {
+                        for (let c = 0; c < 3 && valid; c++) {
+                            const count = guardiansPlayers.reduce((n, p) =>
+                                n + (rows[r].check(p) && cols[c].check(p) ? 1 : 0), 0);
+                            if (count < tier.minMatches) valid = false;
+                        }
+                    }
+
+                    if (valid) {
+                        selectedRowCriteria = rows;
+                        selectedColumnCriteria = cols;
+                        return;
+                    }
+                }
+            }
+
+            // Last-resort fallback — pick any random combo. Should be unreachable
+            // given the depth of the criteria pool, but keeps the game from
+            // exploding if every tier fails.
+            const rng = makeRng(baseSeed);
+            selectedRowCriteria = shuffleWithRng(allRowCriteria, rng).slice(0, 3);
+            selectedColumnCriteria = shuffleWithRng(allColumnCriteria, rng).slice(0, 3);
         }
 
         function loadAllStates() {
