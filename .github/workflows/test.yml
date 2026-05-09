@@ -1,13 +1,15 @@
 name: tests
 
 # Runs the test suite on:
-#   - any pull request targeting dev or main (so reviewers see status before merging)
-#   - any push to dev or main (catches direct commits / post-merge state)
+#   - any pull request targeting dev or main (reviewers see status before merging)
+#   - any push to dev (catches direct commits / post-merge state)
+# Pushes to main are covered by the deploy workflow, which runs tests
+# before deploying — so we skip the duplicate run here.
 on:
   pull_request:
     branches: [dev, main]
   push:
-    branches: [dev, main]
+    branches: [dev]
 
 jobs:
   test:

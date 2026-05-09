@@ -1,0 +1,59 @@
+name: deploy
+
+# Tests run first; deploy only fires if they pass.
+# Triggered on push to main (post-merge) and manual runs.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# GitHub Pages requires these permissions on the deploy job.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deploy at a time. Newer pushes wait for in-flight to finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run test suite
+        run: node test.js
+
+  deploy:
+    name: Deploy to Pages
+    # If `test` fails, `deploy` is skipped automatically.
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
